@@ -7,3 +7,4 @@
 ## Autorzy
 
 - [Vladys Berezhnyi](https://github.com/WladekBBC)
+- [Krystian Czajkowski](https://github.com/krystianczajkowski)
