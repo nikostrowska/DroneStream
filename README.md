@@ -8,3 +8,4 @@
 
 - [Vladys Berezhnyi](https://github.com/WladekBBC)
 - [Krystian Czajkowski](https://github.com/krystianczajkowski)
+- [Piotr Piotrowski](https://github.com/piotrusio02)
