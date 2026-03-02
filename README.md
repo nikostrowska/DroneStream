@@ -11,7 +11,7 @@ DroneStream to aplikacja umożliwiająca monitorowanie i zarządzanie flotą dro
 - pozwala na równoległe monitorowanie wielu urządzeń
 
 ## Makieta interfejsu
-[Makieta UI](img/makieta_ui_wstepna.png)
+![Makieta UI](img/makieta_ui_wstepna.png)
 
 ## Technologie
 
