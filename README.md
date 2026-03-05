@@ -14,6 +14,14 @@ DroneStream to aplikacja umożliwiająca monitorowanie i zarządzanie flotą dro
 ![Makieta UI](img/makieta_ui_wstepna.png)
 
 ## Technologie
+- .NET 8
+- Docker
+- React
+- OpenLayers
+- ossrs
+- mediamtx
+- tiangolo/nginx-rtmp
+
 
 ## Struktura projektu
 
