@@ -65,3 +65,12 @@ obj/
 /node_modules
 /wwwroot/node_modules
 
+.vs/
+.vscode/
+*.log
+*.dockerfile
+*.cache
+*.suo
+*.user
+*.userosscache
+appsettings.Development.json
