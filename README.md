@@ -21,6 +21,8 @@ DroneStream to aplikacja umożliwiająca monitorowanie i zarządzanie flotą dro
 - ossrs
 - mediamtx
 - tiangolo/nginx-rtmp
+- emqx
+- signalR
 
 
 ## Struktura projektu
