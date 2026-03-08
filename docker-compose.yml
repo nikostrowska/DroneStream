@@ -1,0 +1,14 @@
+services:
+  dotnet:
+    image: aspnetapp:latest
+    ports:
+      - "8080:8080"
+    command: ["./aspnetapp"]
+    container_name: aspnetapp
+
+  nginx:
+    image: tiangolo/nginx-rtmp:latest
+    ports:
+      - "1935:1935"
+    container_name: nginx-rtmp
+    command: ["nginx", "-g", "daemon off;"]
