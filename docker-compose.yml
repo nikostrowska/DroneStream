@@ -1,10 +1,10 @@
 services:
   dotnet:
-    image: aspnetapp:latest
+    image: backend:latest
     ports:
       - "8080:8080"
-    command: ["./aspnetapp"]
-    container_name: aspnetapp
+    command: ["./backend"]
+    container_name: backend
 
   nginx:
     image: tiangolo/nginx-rtmp:latest

@@ -1,1 +1,1 @@
-sudo docker build -t aspnetapp .
+sudo docker build -t backend .
