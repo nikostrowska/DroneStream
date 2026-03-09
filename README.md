@@ -28,6 +28,13 @@ DroneStream to aplikacja umożliwiająca monitorowanie i zarządzanie flotą dro
 - emqx
 - signalR
 
+## Testowanie lokalnie
+
+Na tym etapie jest możliwość przetestowania:
+
+- frontend'u wpisując polecenia w katalogu /frontend `npm i ` potem ` npm run build`
+- backend'u wpisując polecenia w katalogu /backend `dotnet run `
+
 ## Przydatne linki
 
 https://learn.microsoft.com/en-us/aspnet/core/client-side/spa/react?view=aspnetcore-8.0
