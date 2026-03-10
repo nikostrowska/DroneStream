@@ -1,0 +1,14 @@
+services:
+  dotnet:
+    image: backend:latest
+    ports:
+      - "8080:8080"
+    command: ["./backend"]
+    container_name: backend
+
+  nginx:
+    image: tiangolo/nginx-rtmp:latest
+    ports:
+      - "1935:1935"
+    container_name: nginx-rtmp
+    command: ["nginx", "-g", "daemon off;"]
