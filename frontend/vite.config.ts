@@ -13,9 +13,10 @@ export default defineConfig({
   server: {
     port: 4000,
     strictPort: true,
+    host: true,
     proxy: {
       "/api": {
-        target: "http://localhost:4001",
+        target: "http://backend:4001",
         secure: false,
       },
     },
