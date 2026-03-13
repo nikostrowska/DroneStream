@@ -15,7 +15,7 @@ RUN dotnet publish -a $TARGETARCH -o /app
 
 # Runtime stage
 FROM mcr.microsoft.com/dotnet/aspnet:8.0
-EXPOSE 8080
+EXPOSE 4001
 WORKDIR /app
 COPY --link --from=build /app .
 USER $APP_UID
