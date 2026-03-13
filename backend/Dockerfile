@@ -5,11 +5,11 @@ ARG TARGETARCH
 WORKDIR /source
 
 # Copy project file and restore as distinct layers
-COPY --link backend/*.csproj .
+COPY --link *.csproj .
 RUN dotnet restore -a $TARGETARCH
 
 # Copy source code and publish app
-COPY --link backend/. .
+COPY --link . .
 RUN dotnet publish -a $TARGETARCH -o /app
 
 
