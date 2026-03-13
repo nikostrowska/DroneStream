@@ -1,1 +1,1 @@
-sudo docker run -it --rm -p 8080:8080 --name backend_cont backend
+sudo docker run -it --rm -p 4001:4001 -e DOTNET_URLS=http://+:4001 --name backend_cont backend
