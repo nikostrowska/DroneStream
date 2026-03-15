@@ -34,6 +34,7 @@ Na tym etapie jest możliwość przetestowania:
 
 - frontend'u wpisując polecenia w katalogu /frontend `npm i ` potem ` npm run build`
 - backend'u wpisując polecenia w katalogu /backend `dotnet run `
+- backend'u z frontend'em wpisując `docker compose up`
 
 ## Przydatne linki
 
