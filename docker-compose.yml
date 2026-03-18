@@ -2,13 +2,33 @@ services:
   dotnet:
     image: backend:latest
     ports:
-      - "8080:8080"
-    command: ["./backend"]
+      - "4001:4001"
+    build:
+      context: backend
     container_name: backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Local
+      - ASPNETCORE_URLS=http://+:4001
+    networks:
+      - backend
 
-  nginx:
-    image: tiangolo/nginx-rtmp:latest
+  react:
+    image: frontend:latest
     ports:
-      - "1935:1935"
-    container_name: nginx-rtmp
-    command: ["nginx", "-g", "daemon off;"]
+      - "4000:4000"
+    build:
+      context: frontend
+    container_name: frontend
+    command: ["npm", "run", "dev"]
+    networks:
+      - backend
+
+  # nginx:
+  #   image: tiangolo/nginx-rtmp:latest
+  #   ports:
+  #     - "1935:1935"
+  #   container_name: nginx-rtmp
+  #   command: ["nginx", "-g", "daemon off;"]
+
+networks:
+  backend:
