@@ -4,8 +4,6 @@
 
 DroneStream to aplikacja umożliwiająca monitorowanie i zarządzanie flotą dronów w czasie rzeczywistym.
 
-[Kanban](https://trello.com/b/TKZjxPVl/dronestream)
-
 ## Zakres
 
 - umożliwia strumieniowanie obrazu z dronów w czasie rzeczywistym
