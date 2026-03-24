@@ -4,8 +4,6 @@
 
 DroneStream to aplikacja umożliwiająca monitorowanie i zarządzanie flotą dronów w czasie rzeczywistym.
 
-[Kanban](https://trello.com/b/TKZjxPVl/dronestream)
-
 ## Zakres
 
 - umożliwia strumieniowanie obrazu z dronów w czasie rzeczywistym
@@ -18,11 +16,10 @@ DroneStream to aplikacja umożliwiająca monitorowanie i zarządzanie flotą dro
 
 ## Technologie
 
-- .NET 8
+- .NET 10
 - Docker
 - React
 - OpenLayers
-- ossrs
 - mediamtx
 - emqx
 - signalR
@@ -34,10 +31,6 @@ Na tym etapie jest możliwość przetestowania:
 - frontend'u wpisując polecenia w katalogu /frontend `npm i ` potem ` npm run build`
 - backend'u wpisując polecenia w katalogu /backend `dotnet run `
 - backend'u z frontend'em wpisując `docker compose up`
-
-## Przydatne linki
-
-https://learn.microsoft.com/en-us/aspnet/core/client-side/spa/react?view=aspnetcore-8.0
 
 ## Struktura projektu
 
