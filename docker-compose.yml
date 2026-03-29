@@ -1,0 +1,42 @@
+services:
+  dotnet:
+    image: backend:latest
+    ports:
+      - "4001:4001"
+    build:
+      context: backend
+    container_name: backend
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Local
+      - ASPNETCORE_URLS=http://+:4001
+    networks:
+      - backend
+
+  react:
+    image: frontend:latest
+    ports:
+      - "4000:4000"
+    build:
+      context: frontend
+    container_name: frontend
+    command: ["npm", "run", "dev"]
+    networks:
+      - backend
+
+  mediamtx:
+    image: bluenviron/mediamtx:latest
+    build:
+      context: mediamtx
+    restart: always
+    ports:
+      - "1935:1935"
+    container_name: mediamtx
+    networks:
+      - mediamtx_net
+
+networks:
+  backend:
+  mediamtx_net:
+    driver: bridge
+    ipam:
+      driver: default
