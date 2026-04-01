@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import reactLogo from "./assets/react.svg";
-import "./App.css";
+import Navbar from "./components/navbar/Navbar";
+import WidgetBar from "./components/widgets/WidgetBar";
+import Stream from "./components/stream/Stream";
 
 function App() {
-  const [count, setCount] = useState(0);
   const [message, setMessage] = useState("");
 
   useEffect(() => {
@@ -14,18 +14,16 @@ function App() {
 
   return (
     <>
-      <div>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div className="flex h-screen w-screen overflow-hidden bg-white flex-col">
+        <Navbar />
+        <div className="flex flex-1">
+          <WidgetBar />
+
+          <main className="flex-1 h-full bg-gray-100 flex items-center justify-center p-8 overflow-hidden">
+            <Stream />
+          </main>
+        </div>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-      </div>
-      <p>{message || "API nie odpowiada poczekaj... "}</p>
     </>
   );
 }
