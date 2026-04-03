@@ -7,17 +7,16 @@ public class DroneTelemetry
     public Guid DroneId { get; set; }
 
     // Frame capture moment
-    public string TimestampRaw { get; set; }
-    public long TimestampMs { get; set; }
+    public string? Timestamp { get; set; }
 
     // Geolocation
-    public double Latitude { get; set; }
-    public double Longitude { get; set; }
-    public double RelativeAltitude { get; set; }
-    public double AbsoluteAltitude { get; set; }
+    public double? Latitude { get; set; }
+    public double? Longitude { get; set; }
+    public double? RelativeAltitude { get; set; }
+    public double? AbsoluteAltitude { get; set; }
 
     // Camera orientation
-    public double GimbalYaw { get; set; }
-    public double GimbalPitch { get; set; }
-    public double GimbalRoll { get; set; }
+    public double? GimbalYaw { get; set; }
+    public double? GimbalPitch { get; set; }
+    public double? GimbalRoll { get; set; }
 }
