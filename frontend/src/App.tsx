@@ -1,30 +1,21 @@
-import { useEffect, useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Navbar from "./components/navbar/Navbar";
-import WidgetBar from "./components/widgets/WidgetBar";
-import Stream from "./components/stream/Stream";
+import Home from "./pages/HomePage";
+import MyFleet from "./pages/MyFleet";
+import LoginPage from "./pages/LoginPage";
 
 function App() {
-  const [message, setMessage] = useState("");
-
-  useEffect(() => {
-    fetch("/api/test")
-      .then((response) => response.json())
-      .then((data) => setMessage(data.message));
-  }, []);
-
   return (
-    <>
-      <div className="flex h-screen w-screen overflow-hidden bg-white flex-col">
+    <Router>
+      <div className="flex h-screen w-screen overflow-hidden bg-[#BEBABA] flex-col">
         <Navbar />
-        <div className="flex flex-1">
-          <WidgetBar />
-
-          <main className="flex-1 h-full bg-gray-100 flex items-center justify-center p-8 overflow-hidden">
-            <Stream />
-          </main>
-        </div>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/myfleet" element={<MyFleet />} />
+          <Route path="/login" element={<LoginPage />} />
+        </Routes>
       </div>
-    </>
+    </Router>
   );
 }
 
