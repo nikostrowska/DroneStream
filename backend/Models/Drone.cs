@@ -1,4 +1,4 @@
-namespace DroneStream.Models;
+namespace backend.Models;
 
 // This model represents only rarely changing information about the drone.
 public class Drone

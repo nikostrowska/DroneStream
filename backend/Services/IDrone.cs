@@ -1,6 +1,6 @@
-using DroneStream.DTOs;
+using backend.DTOs;
 
-namespace DroneStream.Services;
+namespace backend.Services;
 
 public interface IDrone
 {

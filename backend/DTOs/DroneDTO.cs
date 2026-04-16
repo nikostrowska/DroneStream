@@ -1,8 +1,7 @@
-namespace DroneStream.DTOs;
+namespace backend.DTOs;
 
 // DTO record for drone frontend data
 public record DroneDTO(
-    Guid Id,
     string Name,
     string? Model,
     string SerialNumber,
