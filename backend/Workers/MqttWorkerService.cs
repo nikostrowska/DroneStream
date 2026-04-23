@@ -22,45 +22,49 @@ namespace backend.Workers
             _logger.LogWarning("background task start");
             var mqttFactory = new MqttClientFactory();
             _mqttClient = mqttFactory.CreateMqttClient();
+            var id = Guid.NewGuid().ToString();
 
             _mqttClient.ApplicationMessageReceivedAsync += OnMessage;
-            _mqttClient.DisconnectedAsync += OnDisconnected;
-            var mqttClientOptions = new MqttClientOptionsBuilder().WithTcpServer("emqx", 1883).Build();
-            while(!_mqttClient.IsConnected){                
-                try
+
+            var mqttClientOptions = new MqttClientOptionsBuilder()
+            .WithTcpServer("emqx", 1883)
+            .Build();
+            // do łączenia sie z publicznym emqx
+            // var mqttClientOptions = new MqttClientOptionsBuilder().WithWebSocketServer(o =>o.WithUri("wss://broker.emqx.io:8084/mqtt"))
+            // .WithCleanSession()
+            // .WithClientId(id)
+            // .WithTlsOptions(o => o.UseTls())
+            // .Build();
+            _ = Task.Run(
+            async () =>
+            {
+                while (!stoppingToken.IsCancellationRequested)
                 {
-                    await _mqttClient.ConnectAsync(mqttClientOptions, stoppingToken);   
+                    try
+                    {
+                        if (!await _mqttClient.TryPingAsync())
+                        {
+                            await _mqttClient.ConnectAsync(mqttClientOptions, stoppingToken);
+
+                            _logger.LogInformation("Połączono z brokerem");
+                            await _mqttClient.SubscribeAsync("thing/product/+/osd");
+                            _logger.LogInformation("Nasłuchiwanie");
+                            
+                        }
+                    }
+                    catch(Exception ex)
+                    {
+                        _logger.LogWarning($"Rozłączono z brokerem{ex.Message}");
+                    }
+                    finally
+                    {
+                        await Task.Delay(TimeSpan.FromSeconds(5));
+                    }
                 }
-                catch
-                {
-                    await Task.Delay(5000, stoppingToken);
-                }
-            }
-            _logger.LogInformation("Połączono z brokerem");
-            await _mqttClient.SubscribeAsync("thing/product/+/osd");
-            _logger.LogInformation("Nasłuchiwanie");
+            });
 
             await Task.Delay(Timeout.Infinite, stoppingToken);
 
-        }
-
-        private async Task OnDisconnected(MqttClientDisconnectedEventArgs e)
-        {
-            _logger.LogWarning("Rozlaczono z brokerem!");
-
-            await Task.Delay(5000);
-
-            try
-            {
-                await _mqttClient!.ReconnectAsync();
-                _logger.LogInformation("Polaczono ponownie");
-                await _mqttClient.SubscribeAsync("thing/product/+/osd");
-                
-            }
-            catch(Exception ex)
-            {
-                _logger.LogError(ex, "Nie udało się połączyć ponownie");
-            }
         }
 
         private async Task OnMessage(MqttApplicationMessageReceivedEventArgs e)
@@ -68,9 +72,9 @@ namespace backend.Workers
             var topic = e.ApplicationMessage.Topic;
             var payload = e.ApplicationMessage.ConvertPayloadToString();
 
-            await _telemetryService.HandleMessage(topic, payload);
 
             _logger.LogInformation("odebrano [{topic}: {payload}]", topic, payload);
+            await _telemetryService.HandleMessage(topic, payload);
         }
     }
 }
