@@ -89,3 +89,5 @@ appsettings.Development.json
 *.py
 *.SRT
 
+emqx_data/cluster.uuid
+/emqx_data
