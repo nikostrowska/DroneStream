@@ -89,3 +89,4 @@ appsettings.Development.json
 
 #emqx-runtime data
 **/.emqx_data/
+/emqx_data
