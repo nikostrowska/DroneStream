@@ -54,7 +54,7 @@ namespace backend.Workers
                     }
                     catch(Exception ex)
                     {
-                        _logger.LogWarning($"Rozłączono z brokerem{ex.Message}");
+                        _logger.LogWarning("Rozłączono z brokerem{Message}",ex.Message);
                     }
                     finally
                     {

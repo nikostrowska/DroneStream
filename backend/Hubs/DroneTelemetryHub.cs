@@ -1,7 +1,4 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+
 using Microsoft.AspNetCore.SignalR;
 
 namespace backend.Hubs
@@ -9,9 +6,13 @@ namespace backend.Hubs
     public class DroneTelemetryHub : Hub
     {
         
-        public async Task JoinTopic(string droneSn)
+        public async Task SubscribeTopic(string droneSn)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, droneSn);
+        }
+        public async Task UnsubscribeTopic(string droneSn)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, droneSn);
         }
     }
 }
