@@ -1,3 +1,11 @@
+import { useEffect, useState, useRef } from 'react';
+import Map from "ol/Map";
+import View from "ol/View";
+import TileLayer from "ol/layer/Tile";
+import OSM from "ol/source/OSM";
+import { fromLonLat } from "ol/proj";
+import "ol/ol.css";
+
 export interface DroneTelemetry {
   gateway: string;
   data: {
@@ -7,7 +15,39 @@ export interface DroneTelemetry {
   };
 }
 
-export default function MapContext() {
+export default function MapContext({telemetry} : {telemetry : DroneTelemetry | null}) {
+  const mapElement = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<HTMLDivElement | null>(null);
+  useEffect(() => {
+   mapRef.current = new Map({
+      target: mapElement.current,
+      layers: [
+        new TileLayer({
+          source: new OSM(),
+        }),
+      ],
+      view: new View({
+        center: fromLonLat([0.76, 3.50]),
+        zoom: 5,
+      }),
+    });
+
+    return () => {
+      mapRef.current?.setTarget(null);
+    };
+  }, []);
+
+  useEffect(() => {
+    const lon = telemetry?.data?.longitude;
+    const lat = telemetry?.data?.latitude;
+    if (!mapRef.current) return;
+    if (lon != null && lat != null) {
+        mapRef.current
+        .getView()
+        .setCenter(fromLonLat([lon, lat]));
+    }
+  }, [telemetry]);
+
   return (
     <>
       <div className="w-full bg-white rounded-widget shadow-sm border border-gray-100 p-4 flex flex-col gap-2">
@@ -16,10 +56,7 @@ export default function MapContext() {
             Map
           </h3>
           <div className="w-full">
-            <iframe
-              className="w-full min-h-[248px] rounded-xl"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2567.745454545454!2d21.0122!3d52.2297!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x471e8459a0c9c9c9%3A0x471e8459a0c9c9c9!2sWarsaw%2C%20Poland!5e0!3m2!1sen!2sde!4v1634567890123!5m !6e0"
-            ></iframe>
+            <div ref={mapElement} className="w-full h-[248px] rounded-xl"/>
           </div>
         </div>
       </div>

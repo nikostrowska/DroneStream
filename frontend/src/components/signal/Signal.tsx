@@ -1,6 +1,5 @@
 import * as signalR from "@microsoft/signalr";
 import { useEffect, useState } from 'react';
-// import DroneTelemetry from "../widgets/TelemetryContext"
 
 const messageComponent = () => {
     const [connection, setConnection] = useState(null);
