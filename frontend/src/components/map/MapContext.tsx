@@ -1,4 +1,4 @@
-import { useEffect, useState, useRef } from 'react';
+import { useEffect, useRef, useState } from "react";
 import Map from "ol/Map";
 import View from "ol/View";
 import TileLayer from "ol/layer/Tile";
@@ -15,11 +15,11 @@ export interface DroneTelemetry {
   };
 }
 
-export default function MapContext({telemetry} : {telemetry : DroneTelemetry | null}) {
+export default function MapContext({ telemetry }: { telemetry: DroneTelemetry | null }) {
   const mapElement = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<Map | null>(null);
   useEffect(() => {
-   mapRef.current = new Map({
+    mapRef.current = new Map({
       target: mapElement.current,
       layers: [
         new TileLayer({
@@ -27,8 +27,8 @@ export default function MapContext({telemetry} : {telemetry : DroneTelemetry | n
         }),
       ],
       view: new View({
-        center: fromLonLat([0.76, 3.50]),
-        zoom: 5,
+        center: fromLonLat([20.456, 53.7435]),
+        zoom: 17,
       }),
     });
 
@@ -38,13 +38,16 @@ export default function MapContext({telemetry} : {telemetry : DroneTelemetry | n
   }, []);
 
   useEffect(() => {
+    if (!mapRef.current) return;
     const lon = telemetry?.data?.longitude;
     const lat = telemetry?.data?.latitude;
-    if (!mapRef.current) return;
     if (lon != null && lat != null) {
-        mapRef.current
+      mapRef.current
         .getView()
-        .setCenter(fromLonLat([lon, lat]));
+        .animate({
+          center: fromLonLat([lon, lat]),
+          duration: 500,
+        });
     }
   }, [telemetry]);
 
@@ -56,7 +59,7 @@ export default function MapContext({telemetry} : {telemetry : DroneTelemetry | n
             Map
           </h3>
           <div className="w-full">
-            <div ref={mapElement} className="w-full h-[248px] rounded-xl"/>
+            <div ref={mapElement} className="w-full h-[248px] rounded-xl" />
           </div>
         </div>
       </div>
