@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import * as signalR from "@microsoft/signalr";
+import { useEffect, useState } from "react"; import * as signalR from "@microsoft/signalr";
 
 import WidgetBar from "../components/widgets/WidgetBar";
 import Stream from "../components/stream/Stream";
@@ -26,12 +25,11 @@ interface Drone {
  */
 export default function HomePage() {
   const [message, setMessage] = useState("");
-
-  const [connection, setConnection] = useState(null);
+  const [connection, setConnection] = useState<signalR.HubConnection | null>(null);
   useEffect(() => {
-      const newConnection = new signalR.HubConnectionBuilder()
-          .withUrl("http://localhost:4001/droneTelemetryHub").build();
-      setConnection(newConnection);
+    const newConnection = new signalR.HubConnectionBuilder()
+      .withUrl("http://localhost:4001/droneTelemetryHub").build();
+    setConnection(newConnection);
   }, []);
   useEffect(() => {
     fetch("/api/test")
@@ -47,7 +45,7 @@ export default function HomePage() {
 
   return (
     <div className="flex overflow-y-auto">
-      <WidgetBar connection={connection}/>
+      <WidgetBar connection={connection} />
 
       <main className="flex-1 h-full bg-[#BEBABA] flex flex-col p-8 overflow-hidden">
         <div className="flex justify-end items-center mr-3 mt-8">

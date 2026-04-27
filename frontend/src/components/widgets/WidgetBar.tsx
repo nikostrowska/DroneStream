@@ -2,23 +2,23 @@ import * as signalR from "@microsoft/signalr";
 import { useEffect, useState } from 'react';
 
 import MapContext from "../map/MapContext";
-import TelemetryContext from "./TelemetryContext";
+import TelemetryContext, { type DroneTelemetry } from "./TelemetryContext";
 import Widget from "./Widget";
 
 export default function WidgetBar({ connection }: { connection: signalR.HubConnection | null }) {
-  const [dtelemetry, setTelemetry] = useState(null);
+  const [dtelemetry, setTelemetry] = useState<DroneTelemetry | null>(null);
 
   useEffect(() => {
     if (!connection) return;
-      const handler = (dto) => {
-          console.log(dto)
-          setTelemetry(dto);
-      };
-      connection.start().then(() => {
-          connection.invoke("SubscribeTopic", "test");
-          }).catch(e => console.log("Connection failed: ", e));
+    const handler = ({ dto }: { dto: DroneTelemetry }) => {
+      console.log(dto)
+      setTelemetry(dto);
+    };
+    connection.start().then(() => {
+      connection.invoke("SubscribeTopic", "test");
+    }).catch(e => console.log("Connection failed: ", e));
 
-          connection.on("ReceiveTelemetry", handler);
+    connection.on("ReceiveTelemetry", handler);
 
   }, [connection]);
 
@@ -28,16 +28,16 @@ export default function WidgetBar({ connection }: { connection: signalR.HubConne
       <Widget title="Drone Name" value={dtelemetry?.gateway ?? "DJI"} />
       <Widget title="Battery Status" value="66%" />
       <TelemetryContext
-         telemetry= {{
-           gateway: dtelemetry?.gateway ?? "DJI Matrice 400",
-           data: { latitude: dtelemetry?.data.latitude ?? 59.1315, longitude: dtelemetry?.data.longitude ?? 20.2135, height: dtelemetry?.data.height ?? 20.3252}
-         }
+        telemetry={{
+          gateway: dtelemetry?.gateway ?? "DJI Matrice 400",
+          data: { latitude: dtelemetry?.data.latitude ?? 59.1315, longitude: dtelemetry?.data.longitude ?? 20.2135, height: dtelemetry?.data.height ?? 20.3252 }
+        }
         }
       />
       <MapContext telemetry={dtelemetry} />
       <Widget title="Connection" value="75%" />
 
-      <Widget title="Coordinates" value={([dtelemetry?.data?.longitude," ", dtelemetry?.data?.latitude])} />
+      <Widget title="Coordinates" value={([dtelemetry?.data?.longitude, " ", dtelemetry?.data?.latitude])} />
     </aside>
   );
 }
