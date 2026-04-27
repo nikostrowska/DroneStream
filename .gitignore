@@ -89,3 +89,4 @@ appsettings.Development.json
 *.py
 *.SRT
 
+/emqx_data
