@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react"; import * as signalR from "@microsoft/signalr";
+import { useEffect, useState } from "react";
+import * as signalR from "@microsoft/signalr";
 
 import WidgetBar from "../components/widgets/WidgetBar";
 import Stream from "../components/stream/Stream";
@@ -25,7 +26,7 @@ interface Drone {
  */
 export default function HomePage() {
   const [message, setMessage] = useState("");
-  const [connection, setConnection] = useState<signalR.HubConnection | null>(null);
+  const [connection, setConnection] = useState<signalR.HubConnection>();
   useEffect(() => {
     const newConnection = new signalR.HubConnectionBuilder()
       .withUrl("http://localhost:4001/droneTelemetryHub").build();

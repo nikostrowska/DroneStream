@@ -5,19 +5,12 @@ import TileLayer from "ol/layer/Tile";
 import OSM from "ol/source/OSM";
 import { fromLonLat } from "ol/proj";
 import "ol/ol.css";
+import { type DroneTelemetry } from "../widgets/TelemetryContext";
 
-export interface DroneTelemetry {
-  gateway: string;
-  data: {
-    latitude: number;
-    longitude: number;
-    height: number;
-  };
-}
 
-export default function MapContext({ telemetry }: { telemetry: DroneTelemetry | null }) {
-  const mapElement = useRef<HTMLDivElement | null>(null);
-  const mapRef = useRef<Map | null>(null);
+export default function MapContext({ telemetry }: { telemetry: DroneTelemetry | undefined }) {
+  const mapElement = useRef<HTMLDivElement>(undefined);
+  const mapRef = useRef<Map>(undefined);
   useEffect(() => {
     mapRef.current = new Map({
       target: mapElement.current,
@@ -33,7 +26,7 @@ export default function MapContext({ telemetry }: { telemetry: DroneTelemetry | 
     });
 
     return () => {
-      mapRef.current?.setTarget(null);
+      mapRef.current?.setTarget(undefined);
     };
   }, []);
 

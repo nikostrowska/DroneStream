@@ -5,12 +5,12 @@ import MapContext from "../map/MapContext";
 import TelemetryContext, { type DroneTelemetry } from "./TelemetryContext";
 import Widget from "./Widget";
 
-export default function WidgetBar({ connection }: { connection: signalR.HubConnection | null }) {
-  const [dtelemetry, setTelemetry] = useState<DroneTelemetry | null>(null);
+export default function WidgetBar({ connection }: { connection: signalR.HubConnection | undefined }) {
+  const [dtelemetry, setTelemetry] = useState<DroneTelemetry | undefined>();
 
   useEffect(() => {
     if (!connection) return;
-    const handler = ({ dto }: { dto: DroneTelemetry }) => {
+    const handler = (dto: DroneTelemetry) => {
       console.log(dto)
       setTelemetry(dto);
     };
@@ -37,7 +37,7 @@ export default function WidgetBar({ connection }: { connection: signalR.HubConne
       <MapContext telemetry={dtelemetry} />
       <Widget title="Connection" value="75%" />
 
-      <Widget title="Coordinates" value={([dtelemetry?.data?.longitude, " ", dtelemetry?.data?.latitude])} />
+      <Widget title="Coordinates" value={([dtelemetry?.data?.longitude, " ", dtelemetry?.data?.latitude]).toString()} />
     </aside>
   );
 }
