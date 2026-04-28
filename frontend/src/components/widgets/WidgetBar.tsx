@@ -5,8 +5,18 @@ import MapContext from "../map/MapContext";
 import TelemetryContext, { type DroneTelemetry } from "./TelemetryContext";
 import Widget from "./Widget";
 
-export default function WidgetBar({ connection }: { connection: signalR.HubConnection | undefined }) {
+export default function WidgetBar({ connection, droneName }: { connection: signalR.HubConnection | undefined, droneName: string | undefined }) {
   const [dtelemetry, setTelemetry] = useState<DroneTelemetry | undefined>();
+  const [currDrone, setCurrDrone] = useState<String | undefined>("")
+
+  useEffect(() => {
+    if (!connection) return;
+    connection.invoke("UnsubscribeTopic", currDrone);
+    connection.invoke("SubscribeTopic", droneName);
+    setCurrDrone(droneName);
+    console.log("UnsubscribeTopic", currDrone);
+    console.log("subscribeTopic", droneName);
+  }, [droneName]);
 
   useEffect(() => {
     if (!connection) return;
@@ -15,7 +25,9 @@ export default function WidgetBar({ connection }: { connection: signalR.HubConne
       setTelemetry(dto);
     };
     connection.start().then(() => {
-      connection.invoke("SubscribeTopic", "test");
+      connection.invoke("SubscribeTopic", droneName);
+      console.log("Initial SubscribeTopic", droneName);
+      setCurrDrone(droneName);
     }).catch(e => console.log("Connection failed: ", e));
 
     connection.on("ReceiveTelemetry", handler);

@@ -39,14 +39,16 @@ export default function HomePage() {
   }, []);
 
   const [drones, setDrones] = useState<Drone[]>([
-    { id: 1, name: "Drone A", status: "Active" },
-    { id: 2, name: "Drone B", status: "Inactive" },
-    { id: 3, name: "Drone C", status: "Active" },
+    { id: 1, name: "DroneA", status: "Active" },
+    { id: 2, name: "DroneB", status: "Inactive" },
+    { id: 3, name: "DroneC", status: "Active" },
   ]);
+
+  const [currDrone, setCurrDrone] = useState<Drone>(drones[0]);
 
   return (
     <div className="flex overflow-y-auto">
-      <WidgetBar connection={connection} />
+      <WidgetBar connection={connection} droneName={currDrone.name} />
 
       <main className="flex-1 h-full bg-[#BEBABA] flex flex-col p-8 overflow-hidden">
         <div className="flex justify-end items-center mr-3 mt-8">
@@ -56,7 +58,9 @@ export default function HomePage() {
           >
             {message} My Fleet
           </Link>
-          <select className="list-disc w-[300px] ml-4 bg-white rounded px-3 py-2">
+          <select className="list-disc w-[300px] ml-4 bg-white rounded px-3 py-2"
+            onChange={d => setCurrDrone(drones[d.target.value - 1])}
+          >
             {drones.map((drone) => (
               <option key={drone.id} value={drone.id}>
                 {drone.name} - {drone.status}
