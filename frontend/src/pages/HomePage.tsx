@@ -68,7 +68,7 @@ export default function HomePage() {
             ))}
           </select>
         </div>
-        <Stream />
+        <Stream droneName={currDrone.name} />
       </main>
     </div>
   );
