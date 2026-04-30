@@ -4,7 +4,7 @@ import Widget from "./Widget";
 
 export default function WidgetBar() {
   return (
-    <aside className="relative w-[390px] h-full bg-sidebar-bg flex flex-col p-6 gap-4 overflow-y-auto border-r border-gray-200">
+    <aside className="relative w-[390px] h-full bg-sidebar-bg flex flex-col p-6 gap-4 overflow-y-auto border-r border-gray-200 ">
       <Widget title="DJI Matrice 400" />
       <Widget title="Battery Status" value="66%" />
       <Widget title="Battery Status" value="66%" />
