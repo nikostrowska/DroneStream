@@ -34,7 +34,10 @@ services:
     ports:
       - "1935:1935"
       - "8889:8889"
+      - "8189:8189/udp"
     container_name: mediamtx
+    environment:
+      # - MTX_WEBRTCADDITIONALHOSTS=192.168.49.212 # Set this to your IP address
     networks:
       - mediamtx_net
   emqx:
