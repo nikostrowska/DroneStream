@@ -16,6 +16,12 @@ builder.Services.AddCors(options => {
               .AllowAnyMethod()
               .AllowCredentials();
     });
+    options.AddPolicy("AllowAll", policy => {
+            policy.SetIsOriginAllowed(_ => true)
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
+            });
 });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -31,7 +37,7 @@ if (app.Environment.IsDevelopment())
 
 //app.UseHttpsRedirection();
 
-app.UseCors();
+app.UseCors("AllowAll");
 app.MapHub<DroneTelemetryHub>("droneTelemetryHub");
 app.MapControllers();
 app.Run();
