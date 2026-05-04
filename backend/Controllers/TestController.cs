@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Mvc;
 
 
-namespace DroneStream.Controllers;
+namespace backend.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
