@@ -1,16 +1,32 @@
 import { useEffect, useRef } from "react";
 import Map from "ol/Map";
 import View from "ol/View";
+import Feature from 'ol/Feature';
 import TileLayer from "ol/layer/Tile";
+import VectorLayer from 'ol/layer/Vector';
 import OSM from "ol/source/OSM";
 import { fromLonLat } from "ol/proj";
+import VectorSource from 'ol/source/Vector';
+import Point from 'ol/geom/Point';
+import Style from 'ol/style/Style';
+import Icon from 'ol/style/Icon';
 import "ol/ol.css";
+import marker from './marker.png';
 import { type DroneTelemetry } from "../widgets/TelemetryContext";
 
 
 export default function MapContext({ telemetry }: { telemetry: DroneTelemetry | undefined }) {
   const mapElement = useRef<HTMLDivElement>(undefined);
   const mapRef = useRef<Map>(undefined);
+  const markerStyle = new Style({
+    image: new Icon({
+      anchor: [0.5, 1],
+      src: marker,
+    }),
+  });
+  const point = new Point(fromLonLat([20.456, 53.7435]));
+  const feature = new Feature(point);
+
   useEffect(() => {
     mapRef.current = new Map({
       target: mapElement.current,
@@ -18,13 +34,18 @@ export default function MapContext({ telemetry }: { telemetry: DroneTelemetry | 
         new TileLayer({
           source: new OSM(),
         }),
+        new VectorLayer({
+          source: new VectorSource({
+            features: [feature],
+          }),
+          style: markerStyle,
+        }),
       ],
       view: new View({
         center: fromLonLat([20.456, 53.7435]),
         zoom: 17,
       }),
     });
-
     return () => {
       mapRef.current?.setTarget(undefined);
     };
@@ -35,10 +56,12 @@ export default function MapContext({ telemetry }: { telemetry: DroneTelemetry | 
     const lon = telemetry?.data?.longitude;
     const lat = telemetry?.data?.latitude;
     if (lon != null && lat != null) {
+      const pos = fromLonLat([lon, lat]);
+      point.setCoordinates(pos);
       mapRef.current
         .getView()
         .animate({
-          center: fromLonLat([lon, lat]),
+          center: pos,
           duration: 500,
         });
     }
@@ -52,7 +75,7 @@ export default function MapContext({ telemetry }: { telemetry: DroneTelemetry | 
             Map
           </h3>
           <div className="w-full">
-            <div ref={mapElement} className="w-full h-[248px] rounded-xl" />
+            <div ref={mapElement} className="w-full h-[248px] rounded-xl flex content-center items-center relative" />
           </div>
         </div>
       </div>
