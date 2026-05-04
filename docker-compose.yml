@@ -13,8 +13,10 @@ services:
     depends_on:
       db:
         condition: service_healthy
+      emqx:
     networks:
       - backend
+      - emqx
 
   react:
     image: frontend:latest
@@ -37,6 +39,19 @@ services:
     container_name: mediamtx
     networks:
       - mediamtx_net
+  emqx:
+    image: emqx/emqx:5.8.0
+    container_name: emqx
+    ports:
+      - 1883:1883
+      - 8083:8083
+      - 8084:8084
+      - 8883:8883
+      - 18083:18083
+    volumes:
+      - ./emqx_data:/opt/emqx/data
+    networks:
+      - emqx
 
   db:
     image: postgres:17-alpine
@@ -58,6 +73,7 @@ services:
       - backend
 
 networks:
+  emqx:
   backend:
   mediamtx_net:
     driver: bridge

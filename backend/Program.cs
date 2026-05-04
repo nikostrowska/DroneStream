@@ -2,6 +2,9 @@ using backend.Data;
 using backend.Repositories;
 using backend.Services;
 using Microsoft.EntityFrameworkCore;
+using backend.Hubs;
+using backend.Services;
+using backend.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -17,20 +20,28 @@ builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>
         options.SuppressModelStateInvalidFilter = false);
 
+builder.Services.AddHostedService<MqttWorkerService>();
+builder.Services.AddSingleton<IDroneTelemetry, DroneTelemetry>();
+builder.Services.AddSignalR();
+builder.Services.AddCors(options => {
+    options.AddDefaultPolicy(policy => {
+        policy.WithOrigins("http://127.0.0.1:4000", "http://localhost:4000")
+              .AllowAnyHeader()
+              .AllowAnyMethod()
+              .AllowCredentials();
+    });
+});
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
-
-//app.UseHttpsRedirection();
 
 using (var scope = app.Services.CreateScope())
 {
@@ -45,5 +56,8 @@ app.UseExceptionHandler(err => err.Run(async ctx =>
     await ctx.Response.WriteAsJsonAsync(new { error = "Wystąpił błąd serwera." });
 }));
 
+app.UseCors();
+app.MapHub<DroneTelemetryHub>("droneTelemetryHub");
 app.MapControllers();
 app.Run();
+
