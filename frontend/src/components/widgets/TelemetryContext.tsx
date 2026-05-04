@@ -1,9 +1,14 @@
 export interface DroneTelemetry {
-  gateway: string;
+  gateway: string | null;
   data: {
-    latitude: number;
-    longitude: number;
-    height: number;
+    timestamp: number | null;
+    latitude: number | null;
+    longitude: number | null;
+    height: number | null;
+    absoluteAltitude: number | null;
+    gimbalYaw: number | null;
+    gimbalPitch: number | null;
+    gimbalRoll: number | null;
   };
 }
 

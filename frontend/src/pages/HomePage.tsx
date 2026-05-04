@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import * as signalR from "@microsoft/signalr";
+
 import WidgetBar from "../components/widgets/WidgetBar";
 import Stream from "../components/stream/Stream";
 import { Link } from "react-router-dom";
@@ -24,7 +26,12 @@ interface Drone {
  */
 export default function HomePage() {
   const [message, setMessage] = useState("");
-
+  const [connection, setConnection] = useState<signalR.HubConnection>();
+  useEffect(() => {
+    const newConnection = new signalR.HubConnectionBuilder()
+      .withUrl(`http://${window.location.hostname}:4001/droneTelemetryHub`).build();
+    setConnection(newConnection);
+  }, []);
   useEffect(() => {
     fetch("/api/test")
       .then((response) => response.json())
@@ -32,14 +39,16 @@ export default function HomePage() {
   }, []);
 
   const [drones, setDrones] = useState<Drone[]>([
-    { id: 1, name: "Drone A", status: "Active" },
-    { id: 2, name: "Drone B", status: "Inactive" },
-    { id: 3, name: "Drone C", status: "Active" },
+    { id: 1, name: "DroneA", status: "Active" },
+    { id: 2, name: "DroneB", status: "Inactive" },
+    { id: 3, name: "DroneC", status: "Active" },
   ]);
+
+  const [currDrone, setCurrDrone] = useState<Drone>(drones[0]);
 
   return (
     <div className="flex overflow-y-auto">
-      <WidgetBar />
+      <WidgetBar connection={connection} droneName={currDrone.name} />
 
       <main className="flex-1 h-full bg-[#BEBABA] flex flex-col p-8 overflow-hidden">
         <div className="flex justify-end items-center mr-3 mt-8">
@@ -47,9 +56,11 @@ export default function HomePage() {
             to="/myfleet"
             className="text-white hover:text-gray-300 no-underline"
           >
-            My Fleet
+            {message} My Fleet
           </Link>
-          <select className="list-disc w-[300px] ml-4 bg-white rounded px-3 py-2">
+          <select className="list-disc w-[300px] ml-4 bg-white rounded px-3 py-2"
+            onChange={d => setCurrDrone(drones[d.target.value - 1])}
+          >
             {drones.map((drone) => (
               <option key={drone.id} value={drone.id}>
                 {drone.name} - {drone.status}
@@ -57,7 +68,7 @@ export default function HomePage() {
             ))}
           </select>
         </div>
-        <Stream />
+        <Stream droneName={currDrone.name} />
       </main>
     </div>
   );

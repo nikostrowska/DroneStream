@@ -39,6 +39,8 @@ services:
       - "8889:8889"
       - "8189:8189/udp"
     container_name: mediamtx
+    # environment:
+      # - MTX_WEBRTCADDITIONALHOSTS=192.168.49.212 # Set this to your IP address
     networks:
       - mediamtx_net
   emqx:
@@ -48,13 +50,11 @@ services:
       - 1883:1883
       - 8083:8083
       - 8084:8084
-      - 8883:8883
       - 18083:18083
-    volumes:
-      - ./emqx_data:/opt/emqx/data
+    environment:
+      - EMQX_NODE__COOKIE="mycookie"
     networks:
       - emqx
-
   db:
     image: postgres:17-alpine
     container_name: db
