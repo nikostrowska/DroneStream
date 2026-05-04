@@ -1,11 +1,25 @@
+using backend.Data;
+using backend.Repositories;
+using backend.Services;
+using Microsoft.EntityFrameworkCore;
 using backend.Hubs;
 using backend.Services;
 using backend.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddDbContext<ApplicationDbContext>(options =>
+    options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddScoped<IDroneRepository, DroneRepository>();
+
+builder.Services.AddScoped<IDroneService, DroneService>();
+
 builder.Services.AddOpenApi();
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+        options.SuppressModelStateInvalidFilter = false);
+
 builder.Services.AddHostedService<MqttWorkerService>();
 builder.Services.AddSingleton<IDroneTelemetry, DroneTelemetry>();
 builder.Services.AddSignalR();
@@ -29,7 +43,18 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-//app.UseHttpsRedirection();
+using (var scope = app.Services.CreateScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    db.Database.EnsureCreated();
+}
+
+app.UseExceptionHandler(err => err.Run(async ctx =>
+{
+    ctx.Response.StatusCode = 500;
+    ctx.Response.ContentType = "application/json";
+    await ctx.Response.WriteAsJsonAsync(new { error = "Wystąpił błąd serwera." });
+}));
 
 app.UseCors();
 app.MapHub<DroneTelemetryHub>("droneTelemetryHub");

@@ -9,8 +9,11 @@ services:
     environment:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:4001
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=dronestream;Username=postgres;Password=pass
     depends_on:
-      - emqx
+      db:
+        condition: service_healthy
+      emqx:
     networks:
       - backend
       - emqx
@@ -50,6 +53,25 @@ services:
     networks:
       - emqx
 
+  db:
+    image: postgres:17-alpine
+    container_name: db
+    environment:
+      POSTGRES_DB: dronestream
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d dronestream"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - backend
+
 networks:
   emqx:
   backend:
@@ -57,3 +79,6 @@ networks:
     driver: bridge
     ipam:
       driver: default
+
+volumes:
+  db_data:

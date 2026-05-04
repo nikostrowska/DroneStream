@@ -2,11 +2,11 @@ using backend.DTOs;
 
 namespace backend.Services;
 
-public interface IDrone
+public interface IDroneService
 {
     Task<IEnumerable<DroneDTO>> GetAllAsync();
     Task<DroneDTO?> GetByIdAsync(Guid id);
-    Task<DroneDTO> AddDroneAsync(AddDroneDTO add);
-    Task<DroneDTO> UpdateDroneAsync(Guid id, UpdateDroneDTO update);
+    Task<DroneDTO> AddDroneAsync(AddDroneDTO request);
+    Task<DroneDTO?> UpdateDroneAsync(Guid id, UpdateDroneDTO request);
     Task<bool> DeleteDroneAsync(Guid id);
 }

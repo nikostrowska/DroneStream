@@ -1,7 +1,10 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace backend.DTOs;
 
 // DTO record for drone frontend data
 public record DroneDTO(
+    Guid Id,
     string Name,
     string? Model,
     string SerialNumber,
@@ -10,14 +13,14 @@ public record DroneDTO(
 );
 
 public record AddDroneDTO(
-    string Name,
-    string? Model,
-    string SerialNumber
+    [Required] [MaxLength(50)] string Name,
+    [MaxLength(50)] string? Model,
+    [Required] [MaxLength(25)] string SerialNumber
 );
 
 public record UpdateDroneDTO(
-    string? Name,
-    string? Model,
-    string? SerialNumber
+    [MaxLength(50)] string? Name,
+    [MaxLength(50)] string? Model,
+    [MaxLength(25)] string? SerialNumber
 );
 
