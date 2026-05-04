@@ -1,32 +1,36 @@
-import { useEffect, useState } from "react";
-import reactLogo from "./assets/react.svg";
-import "./App.css";
+import { BrowserRouter as Router, Routes, Route, useLocation } from "react-router-dom";
+import Navbar from "./components/navbar/Navbar";
+import Home from "./pages/HomePage";
+import MyFleet from "./pages/MyFleet";
+import LoginPage from "./pages/LoginPage";
 
 function App() {
-  const [count, setCount] = useState(0);
-  const [message, setMessage] = useState("");
+  return (
+    <Router>
+      <AppContent />
+    </Router>
+  );
+}
 
-  useEffect(() => {
-    fetch("/api/test")
-      .then((response) => response.json())
-      .then((data) => setMessage(data.message));
-  }, []);
+function AppContent() {
+  const location = useLocation();
+  const isLogin = location.pathname === "/login";
 
   return (
-    <>
-      <div>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
+      <div
+        className="flex h-screen w-screen overflow-hidden flex-col"
+        style={{ backgroundColor: isLogin ? "transparent" : "#BEBABA"}}
+      >
+
+        {!isLogin && <Navbar />}
+
+
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/myfleet" element={<MyFleet />} />
+          <Route path="/login" element={<LoginPage />} />
+        </Routes>
       </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-      </div>
-      <p>{message || "API nie odpowiada poczekaj... "}</p>
-    </>
   );
 }
 

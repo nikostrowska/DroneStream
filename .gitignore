@@ -86,6 +86,9 @@ appsettings.Development.json
 *.sln
 *.sw?
 .idea
+*.py
+*.SRT
+
 
 #emqx-runtime data
 **/.emqx_data/
