@@ -17,7 +17,7 @@ public class DroneController : ControllerBase
 
     // GET /api/drone
     [HttpGet]
-    public async Task<ActionResult> GetAll()
+    public async Task<IActionResult> GetAll()
     {
         var drones = await _service.GetAllAsync();
         return Ok(drones);
@@ -25,7 +25,7 @@ public class DroneController : ControllerBase
 
     // GET /api/drone/{id}
     [HttpGet("{id:guid}")]
-    public async Task<ActionResult> GetById(Guid id)
+    public async Task<IActionResult> GetById(Guid id)
     {
         var drone = await _service.GetByIdAsync(id);
         return drone is null ? NotFound() : Ok(drone);
@@ -33,7 +33,7 @@ public class DroneController : ControllerBase
 
     // POST /api/drone
     [HttpPost]
-    public async Task<ActionResult> Create([FromBody] AddDroneDTO request)
+    public async Task<IActionResult> Create([FromBody] AddDroneDTO request)
     {
         var created = await _service.AddDroneAsync(request);
         return CreatedAtAction(nameof(GetById), new { id = created.Id }, created);
@@ -41,7 +41,7 @@ public class DroneController : ControllerBase
 
     // PUT /api/drone/{id}
     [HttpPut("{id:guid}")]
-    public async Task<ActionResult> Update(Guid id, [FromBody] UpdateDroneDTO request)
+    public async Task<IActionResult> Update(Guid id, [FromBody] UpdateDroneDTO request)
     {
         var updated = await _service.UpdateDroneAsync(id, request);
         return updated is null ? NotFound() : Ok(updated);
@@ -49,7 +49,7 @@ public class DroneController : ControllerBase
 
     // DELETE /api/drone/{id}
     [HttpDelete("{id:guid}")]
-    public async Task<ActionResult> Delete(Guid id)
+    public async Task<IActionResult> Delete(Guid id)
     {
         var deleted = await _service.DeleteDroneAsync(id);
         return deleted ? NoContent() : NotFound();
