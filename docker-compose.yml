@@ -7,10 +7,16 @@ services:
       context: backend
     container_name: backend
     environment:
-      - ASPNETCORE_ENVIRONMENT=Local
+      - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:4001
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=dronestream;Username=postgres;Password=pass
+    depends_on:
+      db:
+        condition: service_healthy
+      emqx:
     networks:
       - backend
+      - emqx
 
   react:
     image: frontend:latest
@@ -35,10 +41,46 @@ services:
     container_name: mediamtx
     networks:
       - mediamtx_net
+  emqx:
+    image: emqx/emqx:5.8.0
+    container_name: emqx
+    ports:
+      - 1883:1883
+      - 8083:8083
+      - 8084:8084
+      - 8883:8883
+      - 18083:18083
+    volumes:
+      - ./emqx_data:/opt/emqx/data
+    networks:
+      - emqx
+
+  db:
+    image: postgres:17-alpine
+    container_name: db
+    environment:
+      POSTGRES_DB: dronestream
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: pass
+    ports:
+      - "5432:5432"
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d dronestream"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+    networks:
+      - backend
 
 networks:
+  emqx:
   backend:
   mediamtx_net:
     driver: bridge
     ipam:
       driver: default
+
+volumes:
+  db_data:
