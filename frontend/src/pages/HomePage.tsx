@@ -29,7 +29,7 @@ export default function HomePage() {
   const [connection, setConnection] = useState<signalR.HubConnection>();
   useEffect(() => {
     const newConnection = new signalR.HubConnectionBuilder()
-      .withUrl("http://localhost:4001/droneTelemetryHub").build();
+      .withUrl(`http://${window.location.hostname}:4001/droneTelemetryHub`).build();
     setConnection(newConnection);
   }, []);
   useEffect(() => {
