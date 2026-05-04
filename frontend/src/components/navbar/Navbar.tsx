@@ -5,10 +5,16 @@ export default function Navbar() {
     <div className="w-screen bg-[#1E2126] h-[84px] flex items-center overflow-hidden">
       <Link
         to="/"
-        className="text-3xl font-bold text-white ml-5 animated-gradient no-underline"
+        className="relative text-3xl text-white ml-5 no-underline font-jersey font-bold"
       >
-        DRONE
-        <span className="text-3xl font-bold text-red-900">STREAM</span>
+        <div className="absolute inset-0 blur-[6px] opacity-60">
+              <span className="text-[#FFFFFF]">DRONE</span>
+              <span className="text-[#7E2A2A]">STREAM</span>
+            </div>
+            <div className="relative">
+              <span className="text-[#FFFFFF]">DRONE</span>
+              <span className="text-[#7E2A2A]">STREAM</span>
+            </div>
       </Link>
       <nav className="ml-auto mr-5 flex gap-4">
         <Link

@@ -11,5 +11,5 @@ public class Drone
     // User input
     public string Name { get; set; } = string.Empty;
     public string? Model { get; set; }
-    public string? SerialNumber { get; set; }
+    public string SerialNumber { get; set; } = string.Empty;
 }

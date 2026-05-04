@@ -73,7 +73,7 @@ namespace backend.Workers
             var payload = e.ApplicationMessage.ConvertPayloadToString();
 
 
-            // _logger.LogInformation("odebrano [{topic}: {payload}]", topic, payload);
+            _logger.LogInformation("odebrano [{topic}: {payload}]", topic, payload);
             await _telemetryService.HandleMessage(topic, payload);
         }
     }
