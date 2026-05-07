@@ -6,8 +6,24 @@ import TelemetryContext, { type DroneTelemetry } from "./TelemetryContext";
 import Widget from "./Widget";
 
 export default function WidgetBar({ connection, droneName }: { connection: signalR.HubConnection | undefined, droneName: string | undefined }) {
+
+  function convertDDtoDMS(lon: number | null, lat: number | null): string | undefined {
+    if (!lon || !lat) return;
+    const dlon: number = Math.floor(lon);
+    const mlon: number = (Number(lon) - dlon) * 60;
+    const slon: number = Math.round((mlon - Math.floor(mlon)) * 60);
+
+    const dlat: number = Math.floor(lat);
+    const mlat: number = (Number(lat) - dlat) * 60;
+    const slat: number = Math.round((mlat - Math.floor(mlat)) * 60);
+
+
+    return `${dlon}°${Math.floor(mlon)}'${slon}"${dlon >= 0 ? 'N' : 'S'} ${dlat}°${Math.floor(mlat)}'${slat}"${dlon >= 0 ? 'E' : 'W'}`;
+  }
+
   const [dtelemetry, setTelemetry] = useState<DroneTelemetry | undefined>(undefined);
-  const [currDrone, setCurrDrone] = useState<String | undefined>("")
+  const [currDrone, setCurrDrone] = useState<string | undefined>("")
+  const [location, setLocation] = useState<string | undefined>(undefined);
 
   useEffect(() => {
     if (!connection) return;
@@ -21,8 +37,9 @@ export default function WidgetBar({ connection, droneName }: { connection: signa
   useEffect(() => {
     if (!connection) return;
     const handler = (dto: DroneTelemetry) => {
-      console.log(dto)
+      console.log(dto);
       setTelemetry(dto);
+      setLocation(convertDDtoDMS(dto.data.latitude, dto.data.longitude));
     };
     connection.start().then(() => {
       connection.invoke("SubscribeTopic", droneName);
@@ -41,12 +58,19 @@ export default function WidgetBar({ connection, droneName }: { connection: signa
       <TelemetryContext
         telemetry={{
           gateway: dtelemetry?.gateway ?? "DJI Matrice 400",
-          data: { latitude: dtelemetry?.data.latitude ?? 59.1315, longitude: dtelemetry?.data.longitude ?? 20.2135, height: dtelemetry?.data.height ?? 20.3252 }
+          data: {
+            latitude: dtelemetry?.data.latitude ?? 59.1315, longitude: dtelemetry?.data.longitude ?? 20.2135, height: dtelemetry?.data.height ?? 20.3252,
+            timestamp: null,
+            absoluteAltitude: null,
+            gimbalYaw: null,
+            gimbalPitch: null,
+            gimbalRoll: null
+          }
         }
         }
       />
       <MapContext telemetry={dtelemetry} />
-      <Widget title="Coordinates" value={`${dtelemetry?.data.longitude, dtelemetry?.data.latitude}`} />
+      <Widget title="Coordinates" value={location ?? convertDDtoDMS(53.764341, 20.518751)} />
       <Widget title="Connection" value="75%" />
 
     </aside>
