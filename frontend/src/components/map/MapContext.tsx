@@ -11,21 +11,36 @@ import Point from 'ol/geom/Point';
 import Style from 'ol/style/Style';
 import Icon from 'ol/style/Icon';
 import "ol/ol.css";
-import marker from './marker.png';
+import markerRed from './marker_red.png';
+import markerBlue from './marker_blue.png';
 import { type DroneTelemetry } from "../widgets/TelemetryContext";
 
 
-export default function MapContext({ telemetry }: { telemetry: DroneTelemetry | undefined }) {
+export default function MapContext({ telemetry, pilot }: { telemetry: DroneTelemetry | undefined, pilot: DroneTelemetry | undefined }) {
   const mapElement = useRef<HTMLDivElement>(undefined);
   const mapRef = useRef<Map>(undefined);
-  const markerStyle = new Style({
-    image: new Icon({
-      anchor: [0.5, 1],
-      src: marker,
+
+
+  const dronePoint = new Point(fromLonLat([20.456, 53.7435]));
+  const droneFeature = new Feature(dronePoint);
+  droneFeature.setStyle(
+    new Style({
+      image: new Icon({
+        anchor: [0.5, 1],
+        src: markerRed,
+      }),
     }),
-  });
-  const point = new Point(fromLonLat([20.456, 53.7435]));
-  const feature = new Feature(point);
+  );
+  const pilotPoint = new Point(fromLonLat([20.456, 53.7435]));
+  const pilotFeature = new Feature(pilotPoint);
+  pilotFeature.setStyle(
+    new Style({
+      image: new Icon({
+        anchor: [0.5, 1],
+        src: markerBlue,
+      }),
+    }),
+  );
 
   useEffect(() => {
     mapRef.current = new Map({
@@ -36,9 +51,8 @@ export default function MapContext({ telemetry }: { telemetry: DroneTelemetry | 
         }),
         new VectorLayer({
           source: new VectorSource({
-            features: [feature],
+            features: [droneFeature, pilotFeature],
           }),
-          style: markerStyle,
         }),
       ],
       view: new View({
@@ -53,11 +67,20 @@ export default function MapContext({ telemetry }: { telemetry: DroneTelemetry | 
 
   useEffect(() => {
     if (!mapRef.current) return;
-    const lon = telemetry?.data?.longitude;
-    const lat = telemetry?.data?.latitude;
+    const lon = pilot?.data.longitude;
+    const lat = pilot?.data.latitude;
+    if (lon != null && lat != null) {
+      pilotPoint.setCoordinates(fromLonLat([lon, lat]));
+    }
+  }, [pilot]);
+
+  useEffect(() => {
+    if (!mapRef.current) return;
+    const lon = telemetry?.data.longitude;
+    const lat = telemetry?.data.latitude;
     if (lon != null && lat != null) {
       const pos = fromLonLat([lon, lat]);
-      point.setCoordinates(pos);
+      dronePoint.setCoordinates(pos);
       mapRef.current
         .getView()
         .animate({
