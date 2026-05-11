@@ -1,74 +1,204 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as signalR from "@microsoft/signalr";
+import { Link } from "react-router-dom";
+
+import type { DroneDTO } from "../types/drone";
 
 import WidgetBar from "../components/widgets/WidgetBar";
 import Stream from "../components/stream/Stream";
-import { Link } from "react-router-dom";
 
-/**
- * @interface Drone
- * Defines the structure of a drone object with properties:
- * - id: A unique identifier for the drone (number).
- * - name: The name of the drone (string).
- * - status: The current status of the drone (string), e.g., "Active" or "Inactive".
- */
-interface Drone {
-  id: number;
-  name: string;
-  status: string;
-}
+const apiBaseUrl =
+  import.meta.env.VITE_API_BASE_URL ??
+  `http://${window.location.hostname}:4001/api`;
 
-/**
- * @function HomePage - The main component for the home page of the drone streaming application.
- * Fetches a test message from the backend API and displays a list of drones in the fleet.
- * Includes a link to the "My Fleet" page and renders the live stream using the Stream component.
- * @returns {JSX.Element} The rendered home page component.
- */
 export default function HomePage() {
-  const [message, setMessage] = useState("");
-  const [connection, setConnection] = useState<signalR.HubConnection>();
+  const [drones, setDrones] = useState<DroneDTO[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [currDrone, setCurrDrone] = useState<DroneDTO | null>(null);
+
+  /**
+   * STAN ONLINE - Klucz do kolorów kropek
+   * Przechowuje status: serialNumber -> true/false
+   */
+  const [onlineMap, setOnlineMap] = useState<Record<string, boolean>>({});
+  const timeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const connectionRef = useRef<signalR.HubConnection | null>(null);
+
+  /**
+   * 1. POBIERANIE LISTY DRONÓW Z API
+   */
+  const loadDrones = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${apiBaseUrl}/drone`);
+      if (!response.ok) throw new Error("Failed to load drones");
+
+      const data = (await response.json()) as DroneDTO[];
+      setDrones(data);
+
+      // Inicjalizacja mapy statusów na podstawie danych z bazy
+      const initialMap: Record<string, boolean> = {};
+      data.forEach((d) => {
+        initialMap[d.serialNumber] = d.isOnline ?? false;
+      });
+      setOnlineMap(initialMap);
+    } catch (error) {
+      console.error("Error loading drones:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  /**
+   * 2. KONFIGURACJA SIGNALR
+   */
   useEffect(() => {
-    const newConnection = new signalR.HubConnectionBuilder()
-      .withUrl(`http://${window.location.hostname}:4001/droneTelemetryHub`).build();
-    setConnection(newConnection);
-  }, []);
-  useEffect(() => {
-    fetch("/api/test")
-      .then((response) => response.json())
-      .then((data) => setMessage(data.message));
+    loadDrones();
+
+    const connection = new signalR.HubConnectionBuilder()
+      .withUrl(`http://${window.location.hostname}:4001/droneTelemetryHub`)
+      .withAutomaticReconnect()
+      .build();
+
+    connectionRef.current = connection;
+
+    const telemetryHandler = (telemetry: any) => {
+      const sn = telemetry.serialNumber ?? telemetry.gateway;
+
+      if (sn) {
+        const cleanSn = String(sn).trim();
+        console.log(`[SignalR] Rozpoznano drona: "${cleanSn}"`, telemetry);
+
+        setOnlineMap((prev) => ({
+          ...prev,
+          [cleanSn]: true,
+        }));
+
+        // Reset timeoutu (jak wcześniej)
+        if (timeouts.current[cleanSn]) clearTimeout(timeouts.current[cleanSn]);
+        timeouts.current[cleanSn] = setTimeout(() => {
+          setOnlineMap((prev) => ({ ...prev, [cleanSn]: false }));
+        }, 5000);
+      } else {
+        console.warn("Otrzymano dane bez pola 'gateway'!", telemetry);
+      }
+    };
+
+    const statusHandler = (serialNumber: string, isOnline: boolean) => {
+      console.log(
+        `Status update: ${serialNumber} is now ${isOnline ? "ONLINE" : "OFFLINE"}`,
+      );
+      setOnlineMap((prev) => ({
+        ...prev,
+        [serialNumber]: isOnline,
+      }));
+    };
+    const startConnection = async () => {
+      try {
+        // WAŻNE: Najpierw .on, potem .start
+        connection.on("ReceiveTelemetry", telemetryHandler);
+        connection.on("DroneStatusUpdated", statusHandler);
+
+        await connection.start();
+        console.log("SignalR Connected ✅ State:", connection.state);
+
+        // Subskrybuj drony, które już zostały załadowane
+        await subscribeExistingDrones(connection);
+      } catch (err) {
+        console.error("SignalR Connection Error ❌:", err);
+      }
+    };
+
+    startConnection();
+
+    return () => {
+      connection.off("ReceiveTelemetry");
+      connection.off("DroneStatusUpdated");
+      connection.stop();
+    };
   }, []);
 
-  const [drones, setDrones] = useState<Drone[]>([
-    { id: 1, name: "DroneA", status: "Active" },
-    { id: 2, name: "DroneB", status: "Inactive" },
-    { id: 3, name: "DroneC", status: "Active" },
-  ]);
+  /**
+   * 3. FUNKCJA SUBSKRYPCJI
+   */
+  const subscribeExistingDrones = async (conn: signalR.HubConnection) => {
+    if (conn.state !== signalR.HubConnectionState.Connected) return;
 
-  const [currDrone, setCurrDrone] = useState<Drone>(drones[0]);
+    // Używamy aktualnego stanu drones (dostępnego w momencie wywołania)
+    // Jeśli lista jest pusta, subskrypcja zadziała w useEffect poniżej
+    for (const drone of drones) {
+      try {
+        await conn.invoke("SubscribeTopic", drone.serialNumber);
+      } catch (e) {
+        console.error("Initial subscription failed for", drone.serialNumber, e);
+      }
+    }
+  };
+
+  /**
+   * 4. SUBSKRYPCJA NOWO DODANYCH DRONÓW
+   */
+  useEffect(() => {
+    const conn = connectionRef.current;
+    if (
+      conn?.state === signalR.HubConnectionState.Connected &&
+      drones.length > 0
+    ) {
+      drones.forEach((d) => {
+        conn.invoke("SubscribeTopic", d.serialNumber).catch(() => {});
+      });
+    }
+  }, [drones]);
+
+  /**
+   * DANE WYBRANEGO DRONA
+   */
+  const selectedDroneData = drones.find((d) => d.id === currDrone?.id);
 
   return (
-    <div className="flex overflow-y-auto">
-      <WidgetBar connection={connection} droneName={currDrone.name} />
+    <div className="flex overflow-y-auto h-screen">
+      <WidgetBar
+        connection={connectionRef.current ?? undefined}
+        SerialNumber={selectedDroneData?.serialNumber}
+      />
 
-      <main className="flex-1 h-full bg-[#BEBABA] flex flex-col p-8 overflow-hidden">
-        <div className="flex justify-end items-center mr-3 mt-8">
+      <main className="flex-1 bg-[#BEBABA] flex flex-col p-8 overflow-hidden">
+        <div className="flex justify-end items-center mr-3 mt-8 gap-4">
           <Link
             to="/myfleet"
-            className="text-white hover:text-gray-300 no-underline"
+            className="text-white hover:text-gray-300 font-semibold no-underline"
           >
-            {message} My Fleet
+            My Fleet
           </Link>
-          <select className="list-disc w-[300px] ml-4 bg-white rounded px-3 py-2"
-            onChange={d => setCurrDrone(drones[d.target.value - 1])}
+
+          <select
+            className="w-[350px] bg-white rounded-xl px-4 py-3 border border-gray-300 shadow-lg focus:outline-none text-gray-800"
+            onChange={(e) => {
+              const selectedId = e.target.value;
+              const drone = drones.find((d) => d.id === selectedId);
+              setCurrDrone(drone || null);
+            }}
+            value={currDrone?.id || ""}
           >
-            {drones.map((drone) => (
-              <option key={drone.id} value={drone.id}>
-                {drone.name} - {drone.status}
-              </option>
-            ))}
+            <option value="">
+              {loading ? "Loading fleet..." : "Select drone to monitor"}
+            </option>
+
+            {drones.map((drone) => {
+              const isOnline = onlineMap[drone.serialNumber.trim()];
+              return (
+                <option key={drone.id} value={drone.id}>
+                  {isOnline ? "🟢 ONLINE" : "🔴 OFFLINE"} — {drone.name} (
+                  {drone.serialNumber})
+                </option>
+              );
+            })}
           </select>
         </div>
-        <Stream droneName={currDrone.name} />
+
+        <div className="flex-1 mt-6">
+          <Stream SerialNumber={selectedDroneData?.serialNumber ?? null} />
+        </div>
       </main>
     </div>
   );

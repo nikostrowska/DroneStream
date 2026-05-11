@@ -9,5 +9,6 @@ public interface IDroneRepository
     Task<Drone?> GetBySerialNumberAsync(string serialNumber);
     Task<Drone> AddDroneAsync(Drone drone);
     Task<Drone> UpdateDroneAsync(Drone drone);
+    Task<bool> UpdateStatusAsync(string serialNumber, bool isOnline, DateTime? lastActivity);
     Task<bool> DeleteDroneAsync(Guid id);
 }

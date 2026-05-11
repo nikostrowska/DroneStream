@@ -5,7 +5,7 @@ interface WidgetProps {
 
 export default function Widget({ title, value }: WidgetProps) {
   return (
-    <div className="w-full bg-white rounded-widget shadow-sm border border-gray-100 p-4 flex flex-col gap-2">
+    <div className="w-full bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex flex-col gap-2">
       <div className="flex justify-between items-center">
         <span className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
           {title}

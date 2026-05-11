@@ -91,3 +91,5 @@ appsettings.Development.json
 
 emqx_data/cluster.uuid
 /emqx_data
+frontend/package-lock.json
+frontend/package.json
