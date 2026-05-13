@@ -9,12 +9,12 @@ namespace backend.Services
     public class DroneTelemetry : IDroneTelemetry
     {
         private IHubContext<DroneTelemetryHub> _hubContext;
-        private readonly ILogger<DroneTelemetry> _logger;
+        // private readonly ILogger<DroneTelemetry> _logger;
 
         public DroneTelemetry(IHubContext<DroneTelemetryHub> hubContext, ILogger<DroneTelemetry> logger)
         {
             _hubContext = hubContext;
-            _logger = logger;
+            // _logger = logger;
         }
         public async Task HandleMessage(string topic, string payload)
         {
@@ -29,12 +29,13 @@ namespace backend.Services
             var droneTelemetry = new DroneTelemetryDTO
             {
                 Gateway = gateway,
+                Topic = topic.Split('/')[2],
                 Data = data
             };
-            _logger.LogInformation(JsonSerializer.Serialize(droneTelemetry, new JsonSerializerOptions
-            {
-                WriteIndented = true
-            }));
+            // _logger.LogInformation(JsonSerializer.Serialize(droneTelemetry, new JsonSerializerOptions
+            // {
+            //     WriteIndented = true
+            // }));
 
             await _hubContext.Clients.Group(topic.Split('/')[2]).SendAsync("ReceiveTelemetry", droneTelemetry);
 
