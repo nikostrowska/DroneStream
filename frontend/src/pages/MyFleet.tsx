@@ -27,6 +27,23 @@ export default function MyFleet() {
   const [submitting, setSubmitting] = useState(false);
   const [onlineMap, setOnlineMap] = useState<Record<string, boolean>>({});
   const connectionRef = useRef<signalR.HubConnection | null>(null);
+  const dronesRef = useRef<DroneDTO[]>([]);
+  const timeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+
+  useEffect(() => {
+    dronesRef.current = drones;
+  }, [drones]);
+
+  const resetDroneHeartbeat = (serialNumber: string) => {
+    if (timeouts.current[serialNumber]) {
+      clearTimeout(timeouts.current[serialNumber]);
+    }
+
+    timeouts.current[serialNumber] = setTimeout(() => {
+      setOnlineMap((prev) => ({ ...prev, [serialNumber]: false }));
+      delete timeouts.current[serialNumber];
+    }, 5000);
+  };
 
   const loadDrones = async () => {
     setLoading(true);
@@ -40,7 +57,7 @@ export default function MyFleet() {
       setDrones(data);
       setOnlineMap(
         data.reduce<Record<string, boolean>>((map, drone) => {
-          map[drone.serialNumber.trim()] = drone.isOnline;
+          map[drone.serialNumber.trim()] = false;
           return map;
         }, {}),
       );
@@ -61,35 +78,92 @@ export default function MyFleet() {
 
     connectionRef.current = connection;
 
-    const statusHandler = (serialNumber: string, isOnline: boolean) => {
-      const normalized = serialNumber.trim();
-      console.log(`MyFleet SignalR: ${normalized} -> ${isOnline}`);
-      setOnlineMap((prev) => ({ ...prev, [normalized]: isOnline }));
-      setDrones((prev) =>
-        prev.map((drone) =>
-          drone.serialNumber.trim() === normalized
-            ? { ...drone, isOnline }
-            : drone,
-        ),
-      );
+    const telemetryHandler = (payload: {
+      serialNumber?: string;
+      gateway?: string;
+    }) => {
+      const rawSerial = payload.serialNumber ?? payload.gateway;
+      if (!rawSerial) {
+        console.warn(
+          "MyFleet SignalR: telemetry missing serialNumber/gateway",
+          payload,
+        );
+        return;
+      }
+
+      const normalized = rawSerial.trim();
+      setOnlineMap((prev) => ({ ...prev, [normalized]: true }));
+      resetDroneHeartbeat(normalized);
     };
 
-    connection.on("DroneStatusUpdated", statusHandler);
+    const subscribeAllDrones = async () => {
+      if (connection.state !== signalR.HubConnectionState.Connected) return;
+
+      for (const drone of dronesRef.current) {
+        try {
+          await connection.invoke("SubscribeTopic", drone.serialNumber.trim());
+        } catch (error) {
+          console.error(
+            "MyFleet SignalR subscribe failed for",
+            drone.serialNumber,
+            error,
+          );
+        }
+      }
+    };
+
+    connection.on("ReceiveTelemetry", telemetryHandler);
+    connection.onreconnected(() => {
+      console.info("MyFleet SignalR reconnected, restoring subscriptions...");
+      subscribeAllDrones().catch((error) => {
+        console.error("MyFleet re-subscribe failed:", error);
+      });
+    });
 
     connection
       .start()
       .then(() => {
         console.log("MyFleet SignalR connected");
+        return subscribeAllDrones();
       })
       .catch((error) => {
         console.error("MyFleet SignalR connection failed:", error);
       });
 
     return () => {
-      connection.off("DroneStatusUpdated", statusHandler);
-      connection.stop();
+      connection.off("ReceiveTelemetry", telemetryHandler);
+      connection.stop().catch(() => {
+        /* ignore stop errors during unmount */
+      });
+      Object.values(timeouts.current).forEach((timer) => clearTimeout(timer));
+      timeouts.current = {};
     };
   }, []);
+
+  useEffect(() => {
+    const conn = connectionRef.current;
+    if (!conn || conn.state !== signalR.HubConnectionState.Connected) {
+      return;
+    }
+
+    const subscribeTopics = async () => {
+      for (const drone of drones) {
+        try {
+          await conn.invoke("SubscribeTopic", drone.serialNumber.trim());
+        } catch (error) {
+          console.error(
+            "MyFleet subscribe failed for",
+            drone.serialNumber,
+            error,
+          );
+        }
+      }
+    };
+
+    subscribeTopics().catch((error) => {
+      console.error("MyFleet failed to subscribe on drones update:", error);
+    });
+  }, [drones]);
 
   const handleCreateDrone = async (payload: AddDroneDTO) => {
     setSubmitting(true);
@@ -215,104 +289,100 @@ export default function MyFleet() {
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-[66px] w-full max-w-7xl mb-2 mt-2">
                   {drones.map((drone) => {
                     const serial = drone.serialNumber.trim();
-                    const isOnline = onlineMap[serial] ?? drone.isOnline;
+                    const isOnline = onlineMap[serial] ?? false;
                     return (
                       <div
                         key={drone.id}
                         className="group bg-white/20 border border-white/20 rounded-2xl p-5 w-[360px] flex flex-col gap-4 transition-all duration-300 hover:bg-white/30 hover:shadow-[0_8px_30px_rgba(0,0,0,0.12)] hover:-translate-y-1"
                       >
-                      <div className="flex justify-between items-start gap-3">
-                        <div className="min-w-0">
-                          <h3 className="truncate overflow-hidden text-lg font-semibold text-[#1E2126] group-hover:text-black transition">
-                            {drone.name}
-                          </h3>
-                          <p className="text-sm text-[#5F5F5F] truncate">
-                            {drone.model ?? drone.serialNumber}
-                          </p>
-                        </div>
-
-                        <div className="relative inline-block">
-                          <button
-                            className="p-1 hover:bg-white/30 rounded-md transition cursor-pointer"
-                            onClick={() =>
-                              setOpenMenuId(
-                                openMenuId === drone.id ? null : drone.id,
-                              )
-                            }
-                          >
-                            <img
-                              src={moreIcon}
-                              alt="options"
-                              className="w-5 h-5"
-                            />
-                          </button>
-
-                          {openMenuId === drone.id && (
-                            <DroneOptionMenu
-                              onEdit={() => handleEditClick(drone)}
-                              onDelete={() => handleDeleteDrone(drone.id)}
-                            />
-                          )}
-                        </div>
-                      </div>
-
-                      <div className="mx-auto">
-                        <span className="flex justify-between mb-2">
-                          <div className="flex items-center gap-2">
-                            <span
-                              className={`w-3 h-3 rounded-full ${
-                                isOnline
-                                  ? "bg-[#00A323] animate-pulse"
-                                  : "bg-[#B00000]"
-                              }`}
-                            />
-
-                            <p
-                              className={`text-md font-medium ${
-                                isOnline
-                                  ? "text-[#00A323]"
-                                  : "text-[#B00000]"
-                              }`}
-                            >
-                              {isOnline ? "online" : "offline"}
+                        <div className="flex justify-between items-start gap-3">
+                          <div className="min-w-0">
+                            <h3 className="truncate overflow-hidden text-lg font-semibold text-[#1E2126] group-hover:text-black transition">
+                              {drone.name}
+                            </h3>
+                            <p className="text-sm text-[#5F5F5F] truncate">
+                              {drone.model ?? drone.serialNumber}
                             </p>
                           </div>
 
-                          <p
-                            className={`text-md font-medium ${
-                              isOnline
-                                ? "text-[#00A323]"
-                                : "text-[#B00000]"
-                            }`}
-                          >
-                            {isOnline
-                              ? formatLastActivity(drone.lastActivity)
-                              : "Offline"}
-                          </p>
-                        </span>
+                          <div className="relative inline-block">
+                            <button
+                              className="p-1 hover:bg-white/30 rounded-md transition cursor-pointer"
+                              onClick={() =>
+                                setOpenMenuId(
+                                  openMenuId === drone.id ? null : drone.id,
+                                )
+                              }
+                            >
+                              <img
+                                src={moreIcon}
+                                alt="options"
+                                className="w-5 h-5"
+                              />
+                            </button>
 
-                        <div className="w-[275px] h-[215px] mx-auto flex items-center justify-center rounded-xl overflow-hidden">
-                          {isOnline ? (
-                            <img
-                              src={noPhotoAvailable}
-                              alt={drone.name}
-                              className="w-full h-full opacity-60"
-                            />
-                          ) : (
-                            <img
-                              src={offlinePhoto}
-                              alt="offline"
-                              className="w-full h-full opacity-60"
-                            />
-                          )}
+                            {openMenuId === drone.id && (
+                              <DroneOptionMenu
+                                onEdit={() => handleEditClick(drone)}
+                                onDelete={() => handleDeleteDrone(drone.id)}
+                              />
+                            )}
+                          </div>
                         </div>
-                      </div>
 
-                      <button className="bg-[#7E2A2A] hover:bg-[#701C1C] text-white mt-2 w-[133px] h-[28px] px-3 py-1 rounded-full text-sm mx-auto cursor-pointer">
-                        View
-                      </button>
-                    </div>
-                  );
+                        <div className="mx-auto">
+                          <span className="flex justify-between mb-2">
+                            <div className="flex items-center gap-2">
+                              <span
+                                className={`w-3 h-3 rounded-full ${
+                                  isOnline
+                                    ? "bg-[#00A323] animate-pulse"
+                                    : "bg-[#B00000]"
+                                }`}
+                              />
+
+                              <p
+                                className={`text-md font-medium ${
+                                  isOnline ? "text-[#00A323]" : "text-[#B00000]"
+                                }`}
+                              >
+                                {isOnline ? "online" : "offline"}
+                              </p>
+                            </div>
+
+                            <p
+                              className={`text-md font-medium ${
+                                isOnline ? "text-[#00A323]" : "text-[#B00000]"
+                              }`}
+                            >
+                              {isOnline
+                                ? formatLastActivity(drone.lastActivity)
+                                : "Offline"}
+                            </p>
+                          </span>
+
+                          <div className="w-[275px] h-[215px] mx-auto flex items-center justify-center rounded-xl overflow-hidden">
+                            {isOnline ? (
+                              <img
+                                src={noPhotoAvailable}
+                                alt={drone.name}
+                                className="w-full h-full opacity-60"
+                              />
+                            ) : (
+                              <img
+                                src={offlinePhoto}
+                                alt="offline"
+                                className="w-full h-full opacity-60"
+                              />
+                            )}
+                          </div>
+                        </div>
+
+                        <button className="bg-[#7E2A2A] hover:bg-[#701C1C] text-white mt-2 w-[133px] h-[28px] px-3 py-1 rounded-full text-sm mx-auto cursor-pointer">
+                          View
+                        </button>
+                      </div>
+                    );
                   })}
                 </div>
               )}
