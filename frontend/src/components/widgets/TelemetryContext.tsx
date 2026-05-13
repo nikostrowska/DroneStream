@@ -1,5 +1,6 @@
 export interface DroneTelemetry {
   gateway: string | null;
+  topic: string | null;
   data: {
     timestamp: number | null;
     latitude: number | null;
