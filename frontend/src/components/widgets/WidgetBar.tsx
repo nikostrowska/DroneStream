@@ -24,11 +24,17 @@ export default function WidgetBar({ connection, droneName }: { connection: signa
   const [dtelemetry, setTelemetry] = useState<DroneTelemetry | undefined>(undefined);
   const [currDrone, setCurrDrone] = useState<string | undefined>("")
   const [location, setLocation] = useState<string | undefined>(undefined);
+  const [pilotSN, setPilotSN] = useState<string | null>(null);
+  const [pilotTelemetry, setPilotTelemetry] = useState<DroneTelemetry | undefined>(undefined);
 
   useEffect(() => {
     if (!connection) return;
     connection.invoke("UnsubscribeTopic", currDrone);
     connection.invoke("SubscribeTopic", droneName);
+    if (pilotSN) {
+      connection.invoke("UnsubscribeTopic", pilotSN);
+      console.log("UnsubscribeTopic", pilotSN);
+    }
     setCurrDrone(droneName);
     console.log("UnsubscribeTopic", currDrone);
     console.log("subscribeTopic", droneName);
@@ -38,8 +44,13 @@ export default function WidgetBar({ connection, droneName }: { connection: signa
     if (!connection) return;
     const handler = (dto: DroneTelemetry) => {
       console.log(dto);
-      setTelemetry(dto);
-      setLocation(convertDDtoDMS(dto.data.latitude, dto.data.longitude));
+      setPilotSN(dto.gateway);
+      if (dto.topic == dto.gateway) {
+        setPilotTelemetry(dto);
+      } else {
+        setTelemetry(dto);
+        setLocation(convertDDtoDMS(dto.data.latitude, dto.data.longitude));
+      }
     };
     connection.start().then(() => {
       connection.invoke("SubscribeTopic", droneName);
@@ -51,6 +62,12 @@ export default function WidgetBar({ connection, droneName }: { connection: signa
 
   }, [connection]);
 
+  useEffect(() => {
+    if (!connection || !pilotSN) return;
+    connection.invoke("SubscribeTopic", pilotSN);
+    console.log("SubscribeTopic", pilotSN);
+  }, [pilotSN]);
+
 
   return (
     <aside className="relative w-[390px] h-full bg-sidebar-bg flex flex-col p-6 gap-4 overflow-y-auto border-r border-gray-200">
@@ -58,6 +75,7 @@ export default function WidgetBar({ connection, droneName }: { connection: signa
       <TelemetryContext
         telemetry={{
           gateway: dtelemetry?.gateway ?? "DJI Matrice 400",
+          topic: dtelemetry?.gateway ?? "DJI Matrice 400",
           data: {
             latitude: dtelemetry?.data.latitude ?? 59.1315, longitude: dtelemetry?.data.longitude ?? 20.2135, height: dtelemetry?.data.height ?? 20.3252,
             timestamp: null,
@@ -69,7 +87,7 @@ export default function WidgetBar({ connection, droneName }: { connection: signa
         }
         }
       />
-      <MapContext telemetry={dtelemetry} />
+      <MapContext telemetry={dtelemetry} pilot={pilotTelemetry} />
       <Widget title="Coordinates" value={location ?? convertDDtoDMS(53.764341, 20.518751)} />
       <Widget title="Connection" value="75%" />
 
