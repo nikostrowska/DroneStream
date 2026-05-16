@@ -9,18 +9,17 @@ export interface DroneTelemetry {
     gimbalYaw: number | null;
     gimbalPitch: number | null;
     gimbalRoll: number | null;
+    battery?: string | null;
+    connection?: string | null;
   };
 }
 
 export default function TelemetryContext({
-  telemetry: {
-    data: { latitude },
-    data: { longitude },
-    data: { height },
-  },
+  telemetry,
 }: {
   telemetry: DroneTelemetry;
 }) {
+  const { latitude, longitude, height } = telemetry.data;
   return (
     <>
       <div className="w-full bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex gap-2">

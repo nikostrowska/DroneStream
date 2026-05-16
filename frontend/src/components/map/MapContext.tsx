@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useMemo, useRef } from "react";
 import Map from "ol/Map";
 import View from "ol/View";
 import Feature from "ol/Feature";
@@ -19,27 +19,34 @@ export default function MapContext({
 }: {
   telemetry: DroneTelemetry | undefined;
 }) {
-  const mapElement = useRef<HTMLDivElement>(undefined);
-  const mapRef = useRef<Map>(undefined);
-  const markerStyle = new Style({
-    image: new Icon({
-      anchor: [0.5, 1],
-      src: marker,
-    }),
-  });
-  const point = new Point(fromLonLat([20.456, 53.7435]));
-  const feature = new Feature(point);
+  const mapElement = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<Map | null>(null);
+  const pointRef = useRef<Point | null>(null);
+  const featureRef = useRef<Feature | null>(null);
+  const markerStyle = useMemo(
+    () =>
+      new Style({
+        image: new Icon({
+          anchor: [0.5, 1],
+          src: marker,
+        }),
+      }),
+    [],
+  );
 
   useEffect(() => {
+    pointRef.current = new Point(fromLonLat([20.456, 53.7435]));
+    featureRef.current = new Feature(pointRef.current);
+
     mapRef.current = new Map({
-      target: mapElement.current,
+      target: mapElement.current ?? undefined,
       layers: [
         new TileLayer({
           source: new OSM(),
         }),
         new VectorLayer({
           source: new VectorSource({
-            features: [feature],
+            features: [featureRef.current],
           }),
           style: markerStyle,
         }),
@@ -52,15 +59,15 @@ export default function MapContext({
     return () => {
       mapRef.current?.setTarget(undefined);
     };
-  }, []);
+  }, [markerStyle]);
 
   useEffect(() => {
-    if (!mapRef.current) return;
+    if (!mapRef.current || !pointRef.current) return;
     const lon = telemetry?.data?.longitude;
     const lat = telemetry?.data?.latitude;
     if (lon != null && lat != null) {
       const pos = fromLonLat([lon, lat]);
-      point.setCoordinates(pos);
+      pointRef.current.setCoordinates(pos);
       mapRef.current.getView().animate({
         center: pos,
         duration: 500,

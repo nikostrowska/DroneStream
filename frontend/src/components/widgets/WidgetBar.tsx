@@ -1,16 +1,13 @@
-import * as signalR from "@microsoft/signalr";
-import { useEffect, useState } from "react";
+import { useMemo } from "react";
 
 import MapContext from "../map/MapContext";
 import TelemetryContext, { type DroneTelemetry } from "./TelemetryContext";
 import Widget from "./Widget";
 
 export default function WidgetBar({
-  connection,
-  SerialNumber,
+  telemetry,
 }: {
-  connection: signalR.HubConnection | undefined;
-  SerialNumber: string | undefined;
+  telemetry: DroneTelemetry | undefined;
 }) {
   function convertDDtoDMS(
     lon: number | null,
@@ -28,67 +25,50 @@ export default function WidgetBar({
     return `${dlon}°${Math.floor(mlon)}'${slon}"${dlon >= 0 ? "N" : "S"} ${dlat}°${Math.floor(mlat)}'${slat}"${dlon >= 0 ? "E" : "W"}`;
   }
 
-  const [dtelemetry, setTelemetry] = useState<DroneTelemetry | undefined>(
-    undefined,
+  const telemetryWithFallback: DroneTelemetry = telemetry ?? {
+    gateway: "DJI Matrice 400",
+    data: {
+      latitude: 59.1315,
+      longitude: 20.2135,
+      height: 20.3252,
+      timestamp: null,
+      absoluteAltitude: null,
+      gimbalYaw: null,
+      gimbalPitch: null,
+      gimbalRoll: null,
+      battery: null,
+      connection: null,
+    },
+  };
+
+  const location = useMemo(
+    () =>
+      telemetry
+        ? convertDDtoDMS(telemetry.data.longitude, telemetry.data.latitude)
+        : undefined,
+    [telemetry],
   );
-  const [currDrone, setCurrDrone] = useState<string | undefined>("");
-  const [location, setLocation] = useState<string | undefined>(undefined);
-
-  useEffect(() => {
-    if (!connection) return;
-    connection.invoke("UnsubscribeTopic", currDrone);
-    connection.invoke("SubscribeTopic", SerialNumber);
-    setCurrDrone(SerialNumber);
-    console.log("UnsubscribeTopic", currDrone);
-    console.log("subscribeTopic", SerialNumber);
-  }, [SerialNumber]);
-
-  useEffect(() => {
-    if (!connection) return;
-    const handler = (dto: DroneTelemetry) => {
-      console.log(dto);
-      setTelemetry(dto);
-      setLocation(convertDDtoDMS(dto.data.latitude, dto.data.longitude));
-    };
-
-    // Połączenie już jest uruchomione w HomePage, więc tylko subskrybuj
-    if (connection.state === "Connected") {
-      connection.invoke("SubscribeTopic", SerialNumber);
-      console.log("SubscribeTopic", SerialNumber);
-      setCurrDrone(SerialNumber);
-    }
-
-    connection.on("ReceiveTelemetry", handler);
-
-    return () => {
-      connection.off("ReceiveTelemetry", handler);
-    };
-  }, [SerialNumber, connection]);
 
   return (
     <aside className="relative w-[390px] h-full bg-sidebar-bg flex flex-col p-6 gap-4 overflow-y-auto border-r border-gray-200">
-      <Widget title="Pilot Name" value={dtelemetry?.gateway ?? undefined} />
-      <TelemetryContext
-        telemetry={{
-          gateway: dtelemetry?.gateway ?? "DJI Matrice 400",
-          data: {
-            latitude: dtelemetry?.data.latitude ?? 59.1315,
-            longitude: dtelemetry?.data.longitude ?? 20.2135,
-            height: dtelemetry?.data.height ?? 20.3252,
-            timestamp: null,
-            absoluteAltitude: null,
-            gimbalYaw: null,
-            gimbalPitch: null,
-            gimbalRoll: null,
-          },
-        }}
+      <Widget
+        title="Pilot Name"
+        value={telemetryWithFallback.gateway ?? undefined}
       />
-      <MapContext telemetry={dtelemetry} />
+      <TelemetryContext telemetry={telemetryWithFallback} />
+      <MapContext telemetry={telemetry} />
       <Widget
         title="Coordinates"
         value={location ?? convertDDtoDMS(53.764341, 20.518751)}
       />
-      <Widget title="Connection" value="75%" />
+      <Widget
+        title="Connection"
+        value={telemetryWithFallback.data.connection ?? "67%"}
+      />
+      <Widget
+        title="Batery"
+        value={telemetryWithFallback.data.battery ?? "67%"}
+      />
     </aside>
   );
 }

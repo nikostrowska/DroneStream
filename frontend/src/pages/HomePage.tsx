@@ -3,6 +3,7 @@ import * as signalR from "@microsoft/signalr";
 import { Link } from "react-router-dom";
 
 import type { DroneDTO } from "../types/drone";
+import type { DroneTelemetry } from "../components/widgets/TelemetryContext";
 
 import WidgetBar from "../components/widgets/WidgetBar";
 import Stream from "../components/stream/Stream";
@@ -11,10 +12,9 @@ const apiBaseUrl =
   import.meta.env.VITE_API_BASE_URL ??
   `http://${window.location.hostname}:4001/api`;
 
-type TelemetryPayload = {
+type TelemetryPayload = DroneTelemetry & {
   serialNumber?: string | null;
   gateway?: string | null;
-  [key: string]: unknown;
 };
 
 export default function HomePage() {
@@ -23,9 +23,13 @@ export default function HomePage() {
   const [currDrone, setCurrDrone] = useState<DroneDTO | null>(null);
 
   const [onlineMap, setOnlineMap] = useState<Record<string, boolean>>({});
+  const [telemetryMap, setTelemetryMap] = useState<
+    Record<string, DroneTelemetry>
+  >({});
   const timeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
   const connectionRef = useRef<signalR.HubConnection | null>(null);
   const dronesRef = useRef<DroneDTO[]>([]);
+  const subscribedTopicsRef = useRef<Set<string>>(new Set());
 
   /**
    * Keep the latest drone list available for reconnect and subscription logic.
@@ -81,6 +85,34 @@ export default function HomePage() {
     }, 5000);
   };
 
+  const subscribeDroneTopic = async (serialNumber: string, force = false) => {
+    const connection = connectionRef.current;
+    if (
+      !connection ||
+      connection.state !== signalR.HubConnectionState.Connected
+    ) {
+      return;
+    }
+
+    if (!serialNumber) return;
+    if (!force && subscribedTopicsRef.current.has(serialNumber)) {
+      return;
+    }
+
+    try {
+      await connection.invoke("SubscribeTopic", serialNumber);
+      subscribedTopicsRef.current.add(serialNumber);
+    } catch (error) {
+      console.error("Unable to subscribe to drone topic:", serialNumber, error);
+    }
+  };
+
+  const subscribeAllDrones = async (force = false) => {
+    for (const drone of dronesRef.current) {
+      await subscribeDroneTopic(drone.serialNumber.trim(), force);
+    }
+  };
+
   /**
    * Create and manage a single persistent SignalR connection.
    */
@@ -91,24 +123,6 @@ export default function HomePage() {
       .build();
 
     connectionRef.current = connection;
-
-    const subscribeAllDrones = async () => {
-      if (connection.state !== signalR.HubConnectionState.Connected) {
-        return;
-      }
-
-      for (const drone of dronesRef.current) {
-        try {
-          await connection.invoke("SubscribeTopic", drone.serialNumber.trim());
-        } catch (error) {
-          console.error(
-            "Unable to subscribe to drone topic:",
-            drone.serialNumber,
-            error,
-          );
-        }
-      }
-    };
 
     const telemetryHandler = (payload: TelemetryPayload) => {
       const rawSerial = payload.serialNumber ?? payload.gateway;
@@ -122,6 +136,11 @@ export default function HomePage() {
 
       const serialNumber = String(rawSerial).trim();
 
+      // Payload is already the full DroneTelemetry object
+      setTelemetryMap((prev) => ({
+        ...prev,
+        [serialNumber]: payload,
+      }));
       setOnlineMap((prev) => ({ ...prev, [serialNumber]: true }));
       resetDroneHeartbeat(serialNumber);
     };
@@ -130,7 +149,7 @@ export default function HomePage() {
 
     connection.onreconnected(() => {
       console.info("SignalR reconnected, restoring drone subscriptions...");
-      subscribeAllDrones().catch((error) => {
+      subscribeAllDrones(true).catch((error) => {
         console.error("Failed to re-subscribe after reconnect:", error);
       });
     });
@@ -148,7 +167,7 @@ export default function HomePage() {
     startConnection();
 
     return () => {
-      connection.off("ReceiveTelemetry");
+      connection.off("ReceiveTelemetry", telemetryHandler);
       connection.stop().catch(() => {
         /* ignore stop errors during unmount */
       });
@@ -169,11 +188,7 @@ export default function HomePage() {
 
     const subscribeTopics = async () => {
       for (const drone of drones) {
-        try {
-          await conn.invoke("SubscribeTopic", drone.serialNumber.trim());
-        } catch (error) {
-          console.error("SubscribeTopic failed for", drone.serialNumber, error);
-        }
+        await subscribeDroneTopic(drone.serialNumber.trim());
       }
     };
 
@@ -184,13 +199,13 @@ export default function HomePage() {
 
   const selectedDroneData =
     drones.find((drone) => drone.id === currDrone?.id) ?? null;
+  const selectedTelemetry = selectedDroneData
+    ? telemetryMap[selectedDroneData.serialNumber.trim()]
+    : undefined;
 
   return (
     <div className="flex overflow-y-auto h-screen">
-      <WidgetBar
-        connection={connectionRef.current ?? undefined}
-        SerialNumber={selectedDroneData?.serialNumber}
-      />
+      <WidgetBar telemetry={selectedTelemetry} />
 
       <main className="flex-1 bg-[#BEBABA] flex flex-col p-8 overflow-hidden">
         <div className="flex justify-end items-center mr-3 mt-8 gap-4">
@@ -202,7 +217,7 @@ export default function HomePage() {
           </Link>
 
           <select
-            className="w-[350px] bg-white rounded-xl px-4 py-3 border border-gray-300 shadow-lg focus:outline-none text-gray-800"
+            className="w-[500px] bg-white rounded-xl px-4 py-3 border border-gray-300 shadow-lg focus:outline-none text-gray-800"
             onChange={(event) => {
               const selectedId = event.target.value;
               const drone =
