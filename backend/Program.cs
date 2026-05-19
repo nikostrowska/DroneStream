@@ -26,20 +26,24 @@ builder.Services.AddControllers()
 builder.Services.AddHostedService<MqttWorkerService>();
 builder.Services.AddSingleton<IDroneTelemetry, DroneTelemetry>();
 builder.Services.AddSignalR();
-builder.Services.AddCors(options => {
-    options.AddDefaultPolicy(policy => {
+builder.Services.AddCors(options =>
+{
+    options.AddDefaultPolicy(policy =>
+    {
         policy.WithOrigins("http://127.0.0.1:4000", "http://localhost:4000")
               .AllowAnyHeader()
               .AllowAnyMethod()
               .AllowCredentials();
     });
-    options.AddPolicy("AllowAll", policy => {
-            policy.SetIsOriginAllowed(_ => true)
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials();
-            });
+    options.AddPolicy("AllowAll", policy =>
+    {
+        policy.SetIsOriginAllowed(_ => true)
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
+    });
 });
+builder.Services.AddMemoryCache();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
