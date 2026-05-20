@@ -16,7 +16,7 @@ import markerBlue from './marker_blue.png';
 import { type DroneTelemetry } from "../widgets/TelemetryContext";
 
 
-export default function MapContext({ telemetry, pilot }: { telemetry: DroneTelemetry | undefined, pilot: DroneTelemetry | undefined }) {
+export default function MapContext({ droneTelemetry, pilotTelemetry }: { droneTelemetry: DroneTelemetry | undefined, pilotTelemetry: DroneTelemetry | undefined }) {
   const mapElement = useRef<HTMLDivElement>(undefined);
   const mapRef = useRef<Map>(undefined);
 
@@ -67,17 +67,17 @@ export default function MapContext({ telemetry, pilot }: { telemetry: DroneTelem
 
   useEffect(() => {
     if (!mapRef.current) return;
-    const lon = pilot?.data.longitude;
-    const lat = pilot?.data.latitude;
+    const lon = pilotTelemetry?.data.longitude;
+    const lat = pilotTelemetry?.data.latitude;
     if (lon != null && lat != null) {
       pilotPoint.setCoordinates(fromLonLat([lon, lat]));
     }
-  }, [pilot]);
+  }, [pilotTelemetry]);
 
   useEffect(() => {
     if (!mapRef.current) return;
-    const lon = telemetry?.data.longitude;
-    const lat = telemetry?.data.latitude;
+    const lon = droneTelemetry?.data.longitude;
+    const lat = droneTelemetry?.data.latitude;
     if (lon != null && lat != null) {
       const pos = fromLonLat([lon, lat]);
       dronePoint.setCoordinates(pos);
@@ -88,7 +88,7 @@ export default function MapContext({ telemetry, pilot }: { telemetry: DroneTelem
           duration: 500,
         });
     }
-  }, [telemetry]);
+  }, [droneTelemetry]);
 
   return (
     <>
