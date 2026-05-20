@@ -63,11 +63,11 @@ export default function WidgetBar({
       />
       <Widget
         title="Connection"
-        value={telemetryWithFallback.data.connection ?? "67%"}
+        value={telemetryWithFallback.data.connection ?? "---"}
       />
       <Widget
         title="Batery"
-        value={telemetryWithFallback.data.battery ?? "67%"}
+        value={telemetryWithFallback.data.battery ?? "---%"}
       />
     </aside>
   );

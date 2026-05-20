@@ -93,5 +93,3 @@ export default function MapContext({
     </>
   );
 }
-
-// {"gateway": "MichaelJacksonHEEHEE", "data": {"latitude": 53.76434, "longitude": 20.518822, "height": 24.834}}
