@@ -24,8 +24,7 @@ builder.Services.AddControllers()
 
 builder.Services.AddHostedService<MqttWorkerService>();
 builder.Services.AddSingleton<IDroneTelemetry, DroneTelemetry>();
-builder.Services.AddSingleton<DroneStatusService>();
-builder.Services.AddHostedService<DroneMonitorWorker>();
+
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
