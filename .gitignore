@@ -89,7 +89,7 @@ appsettings.Development.json
 *.py
 *.SRT
 
-
-#emqx-runtime data
-**/.emqx_data/
+emqx_data/cluster.uuid
 /emqx_data
+frontend/package-lock.json
+frontend/package.json

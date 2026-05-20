@@ -3,7 +3,6 @@ using backend.Repositories;
 using backend.Services;
 using Microsoft.EntityFrameworkCore;
 using backend.Hubs;
-using backend.Services;
 using backend.Workers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -25,6 +24,7 @@ builder.Services.AddControllers()
 
 builder.Services.AddHostedService<MqttWorkerService>();
 builder.Services.AddSingleton<IDroneTelemetry, DroneTelemetry>();
+
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {

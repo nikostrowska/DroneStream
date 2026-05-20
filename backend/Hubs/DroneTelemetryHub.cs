@@ -6,7 +6,20 @@ namespace backend.Hubs
 {
     public class DroneTelemetryHub(IMemoryCache cache) : Hub
     {
-        public async Task SubscribeTopic(string droneSn)
+
+
+        public async Task SubscribeTopic(string SerialNumber)
+        {
+            var normalized = SerialNumber?.Trim();
+            if (string.IsNullOrWhiteSpace(normalized))
+            {
+                return;
+            }
+
+            await Groups.AddToGroupAsync(Context.ConnectionId, normalized);
+        }
+
+        public async Task UnsubscribeTopic(string SerialNumber)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, droneSn);
             if (cache.TryGetValue(droneSn, out DroneTelemetryDTO? cachedData))
@@ -14,10 +27,18 @@ namespace backend.Hubs
                 await Clients.Group(droneSn).SendAsync("ReceiveTelemetry", cachedData);
 
             }
+            var normalized = SerialNumber?.Trim();
+            if (string.IsNullOrWhiteSpace(normalized))
+            {
+                return;
+            }
+
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, normalized);
         }
-        public async Task UnsubscribeTopic(string droneSn)
+
+        public async Task SendTelemetry(backend.Models.DroneTelemetry data)
         {
-            await Groups.RemoveFromGroupAsync(Context.ConnectionId, droneSn);
+            await Clients.All.SendAsync("ReceiveTelemetry", data);
         }
     }
 }

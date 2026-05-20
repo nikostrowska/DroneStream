@@ -20,7 +20,10 @@ namespace backend.Services
             var topicSN = topic_parts[2];
 
             using var jsonTelemetry = JsonDocument.Parse(payload);
-            var gateway = jsonTelemetry.RootElement.GetProperty("gateway").GetString();
+            var gateway = jsonTelemetry.RootElement.GetProperty("gateway").GetString()?.Trim();
+            var serialNumber = jsonTelemetry.RootElement.GetProperty("serialNumber").GetString()?.Trim();
+            var identifier = serialNumber ?? gateway; // Use serialNumber if available, otherwise gateway
+            _logger.LogInformation("Received MQTT payload with gateway: '{Gateway}', serialNumber: '{SerialNumber}', using identifier: '{Identifier}'", gateway, serialNumber, identifier);
             var options = new JsonSerializerOptions()
             {
                 PropertyNameCaseInsensitive = true
