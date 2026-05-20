@@ -11,6 +11,7 @@ public class ApplicationDbContext : DbContext
     }
 
     public DbSet<Drone> DroneTable => Set<Drone>();
+    public DbSet<User> UserTable => Set<User>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -21,6 +22,14 @@ public class ApplicationDbContext : DbContext
             e.Property(d => d.Model).HasMaxLength(50);
             e.Property(d => d.SerialNumber).IsRequired().HasMaxLength(25);
             e.HasIndex(d => d.SerialNumber).IsUnique();
+        });
+
+        modelBuilder.Entity<User>(e=>
+        {
+            e.HasKey(u => u.Id);
+            e.Property(u => u.email).IsRequired();
+            e.HasIndex(u => u.email).IsUnique();
+            e.Property(u => u.hashedPassword).IsRequired();
         });
     }
 }
