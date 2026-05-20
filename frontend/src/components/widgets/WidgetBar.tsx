@@ -87,7 +87,7 @@ export default function WidgetBar({ connection, droneName }: { connection: signa
         }
         }
       />
-      <MapContext telemetry={dtelemetry} pilot={pilotTelemetry} />
+      <MapContext droneTelemetry={dtelemetry} pilotTelemetry={pilotTelemetry} />
       <Widget title="Coordinates" value={location ?? convertDDtoDMS(53.764341, 20.518751)} />
       <Widget title="Connection" value="75%" />
 
