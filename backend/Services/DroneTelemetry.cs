@@ -10,15 +10,16 @@ namespace backend.Services
     {
         private readonly IHubContext<DroneTelemetryHub> _hubContext;
         private readonly ILogger<DroneTelemetry> _logger;
-
+        private readonly DroneStatusService _statusService;
 
         public DroneTelemetry(
             IHubContext<DroneTelemetryHub> hubContext,
-            ILogger<DroneTelemetry> logger)
+            ILogger<DroneTelemetry> logger,
+            DroneStatusService statusService)
         {
             _hubContext = hubContext;
             _logger = logger;
-
+            _statusService = statusService;
         }
 
         public async Task HandleMessage(string topic, string payload)
@@ -36,6 +37,7 @@ namespace backend.Services
 
             if (!string.IsNullOrWhiteSpace(identifier))
             {
+                _statusService.UpdateActivity(identifier);
                 _logger.LogInformation("Updated activity for drone: {Identifier}", identifier);
             }
 

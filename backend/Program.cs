@@ -24,7 +24,8 @@ builder.Services.AddControllers()
 
 builder.Services.AddHostedService<MqttWorkerService>();
 builder.Services.AddSingleton<IDroneTelemetry, DroneTelemetry>();
-
+builder.Services.AddSingleton<DroneStatusService>();
+builder.Services.AddHostedService<DroneMonitorWorker>();
 builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
@@ -71,4 +72,3 @@ app.UseExceptionHandler(err => err.Run(async ctx =>
 app.MapHub<DroneTelemetryHub>("droneTelemetryHub");
 app.MapControllers();
 app.Run();
-
