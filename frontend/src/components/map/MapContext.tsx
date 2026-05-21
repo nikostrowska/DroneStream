@@ -1,30 +1,97 @@
-export interface DroneTelemetry {
-  gateway: string;
-  data: {
-    latitude: number;
-    longitude: number;
-    height: number;
-  };
-}
+import { useEffect, useMemo, useRef } from "react";
+import Map from "ol/Map";
+import View from "ol/View";
+import Feature from "ol/Feature";
+import TileLayer from "ol/layer/Tile";
+import VectorLayer from "ol/layer/Vector";
+import OSM from "ol/source/OSM";
+import { fromLonLat } from "ol/proj";
+import VectorSource from "ol/source/Vector";
+import Point from "ol/geom/Point";
+import Style from "ol/style/Style";
+import Icon from "ol/style/Icon";
+import "ol/ol.css";
+import marker from "../../assets/droneIcon.png";
+import { type DroneTelemetry } from "../widgets/TelemetryContext";
 
-export default function MapContext() {
-  return (
-    <>
-      <div className="w-full bg-white rounded-widget shadow-sm border border-gray-100 p-4 flex flex-col gap-2">
-        <div className="flex mx auto flex-col gap-2 w-full">
-          <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-            Map
-          </h3>
-          <div className="w-full">
-            <iframe
-              className="w-full min-h-[248px] rounded-xl"
-              src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2567.745454545454!2d21.0122!3d52.2297!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x471e8459a0c9c9c9%3A0x471e8459a0c9c9c9!2sWarsaw%2C%20Poland!5e0!3m2!1sen!2sde!4v1634567890123!5m !6e0"
-            ></iframe>
+export default function MapContext({
+  telemetry,
+}: {
+  telemetry: DroneTelemetry | undefined;
+}) {
+  const mapElement = useRef<HTMLDivElement | null>(null);
+  const mapRef = useRef<Map | null>(null);
+  const pointRef = useRef<Point | null>(null);
+  const featureRef = useRef<Feature | null>(null);
+  const markerStyle = useMemo(
+    () =>
+      new Style({
+        image: new Icon({
+          anchor: [0.5, 0.5],
+          src: marker,
+          scale: 0.08,
+        }),
+      }),
+    [],
+  );
+
+  useEffect(() => {
+    pointRef.current = new Point(fromLonLat([20.456, 53.7435]));
+    featureRef.current = new Feature(pointRef.current);
+
+    mapRef.current = new Map({
+      target: mapElement.current ?? undefined,
+      layers: [
+        new TileLayer({
+          source: new OSM(),
+        }),
+        new VectorLayer({
+          source: new VectorSource({
+            features: [featureRef.current],
+          }),
+          style: markerStyle,
+        }),
+      ],
+      view: new View({
+        center: fromLonLat([20.456, 53.7435]),
+        zoom: 17,
+      }),
+    });
+    return () => {
+      mapRef.current?.setTarget(undefined);
+    };
+  }, [markerStyle]);
+
+  useEffect(() => {
+    if (!mapRef.current || !pointRef.current) return;
+    const lon = telemetry?.data?.longitude;
+    const lat = telemetry?.data?.latitude;
+    if (lon != null && lat != null) {
+      const pos = fromLonLat([lon, lat]);
+      pointRef.current.setCoordinates(pos);
+      mapRef.current.getView().animate({
+        center: pos,
+        duration: 500,
+      });
+    }
+  }, [telemetry]);
+
+
+    return (
+      <>
+        <div className="w-full bg-white/20 rounded-xl shadow-sm border border-white/20 p-4 flex flex-col gap-2">
+          <div className="flex mx auto flex-col gap-2 w-full">
+            <h3 className="text-[16px] font-bold text-[#676262] uppercase tracking-widest">
+              Map
+            </h3>
+            <div className="w-full">
+              <div
+                ref={mapElement}
+                className="w-full h-[248px] rounded-xl overflow-hidden flex content-center items-center relative"
+              />
+            </div>
           </div>
         </div>
-      </div>
-    </>
-  );
-}
-
-// {"gateway": "MichaelJacksonHEEHEE", "data": {"latitude": 53.76434, "longitude": 20.518822, "height": 24.834}}
+      </>
+    );
+  }
