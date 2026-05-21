@@ -3,11 +3,14 @@ import Navbar from "./components/navbar/Navbar";
 import Home from "./pages/HomePage";
 import MyFleet from "./pages/MyFleet";
 import LoginPage from "./pages/LoginPage";
+import { SignalRProvider } from "./components/signalRContext/SignalRProvider";
 
 function App() {
   return (
     <Router>
-      <AppContent />
+      <SignalRProvider>
+        <AppContent />
+      </SignalRProvider>
     </Router>
   );
 }
@@ -17,20 +20,20 @@ function AppContent() {
   const isLogin = location.pathname === "/login";
 
   return (
-      <div
-        className="flex h-screen w-screen overflow-hidden flex-col"
-        style={{ backgroundColor: isLogin ? "transparent" : "#BEBABA"}}
-      >
+    <div
+      className="flex h-screen w-screen overflow-hidden flex-col"
+      style={{ backgroundColor: isLogin ? "transparent" : "#BEBABA" }}
+    >
 
-        {!isLogin && <Navbar />}
+      {!isLogin && <Navbar />}
 
 
-        <Routes>
-          <Route path="/" element={<Home />} />
-          <Route path="/myfleet" element={<MyFleet />} />
-          <Route path="/login" element={<LoginPage />} />
-        </Routes>
-      </div>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/myfleet" element={<MyFleet />} />
+        <Route path="/login" element={<LoginPage />} />
+      </Routes>
+    </div>
   );
 }
 

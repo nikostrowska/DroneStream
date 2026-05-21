@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import * as signalR from "@microsoft/signalr";
 
 import WidgetBar from "../components/widgets/WidgetBar";
 import Stream from "../components/stream/Stream";
 import { Link } from "react-router-dom";
+import { useSignalR } from "../components/signalRContext/SignalRProvider";
 
 /**
  * @interface Drone
@@ -26,19 +26,14 @@ interface Drone {
  */
 export default function HomePage() {
   const [message, setMessage] = useState("");
-  const [connection, setConnection] = useState<signalR.HubConnection>();
-  useEffect(() => {
-    const newConnection = new signalR.HubConnectionBuilder()
-      .withUrl(`http://${window.location.hostname}:4001/droneTelemetryHub`).build();
-    setConnection(newConnection);
-  }, []);
+  const { connection } = useSignalR();
   useEffect(() => {
     fetch("/api/test")
       .then((response) => response.json())
       .then((data) => setMessage(data.message));
   }, []);
 
-  const [drones, setDrones] = useState<Drone[]>([
+  const [drones, _] = useState<Drone[]>([
     { id: 1, name: "DroneA", status: "Active" },
     { id: 2, name: "DroneB", status: "Inactive" },
     { id: 3, name: "DroneC", status: "Active" },
@@ -59,7 +54,7 @@ export default function HomePage() {
             {message} My Fleet
           </Link>
           <select className="list-disc w-[300px] ml-4 bg-white rounded px-3 py-2"
-            onChange={d => setCurrDrone(drones[d.target.value - 1])}
+            onChange={d => setCurrDrone(drones[Number(d.target.value) - 1])}
           >
             {drones.map((drone) => (
               <option key={drone.id} value={drone.id}>
