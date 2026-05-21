@@ -11,7 +11,7 @@ import Point from "ol/geom/Point";
 import Style from "ol/style/Style";
 import Icon from "ol/style/Icon";
 import "ol/ol.css";
-import marker from "./marker.png";
+import marker from "../../assets/droneIcon.png";
 import { type DroneTelemetry } from "../widgets/TelemetryContext";
 
 export default function MapContext({
@@ -27,8 +27,9 @@ export default function MapContext({
     () =>
       new Style({
         image: new Icon({
-          anchor: [0.5, 1],
+          anchor: [0.5, 0.5],
           src: marker,
+          scale: 0.08,
         }),
       }),
     [],
@@ -75,23 +76,22 @@ export default function MapContext({
     }
   }, [telemetry]);
 
-  return (
-    <>
-      <div className="w-full bg-white rounded-xl shadow-sm border border-gray-100 p-4 flex flex-col gap-2">
-        <div className="flex mx auto flex-col gap-2 w-full">
-          <h3 className="text-[10px] font-bold text-gray-400 uppercase tracking-widest">
-            Map
-          </h3>
-          <div className="w-full">
-            <div
-              ref={mapElement}
-              className="w-full h-[248px] rounded-xl flex content-center items-center relative"
-            />
+
+    return (
+      <>
+        <div className="w-full bg-white/20 rounded-xl shadow-sm border border-white/20 p-4 flex flex-col gap-2">
+          <div className="flex mx auto flex-col gap-2 w-full">
+            <h3 className="text-[16px] font-bold text-[#676262] uppercase tracking-widest">
+              Map
+            </h3>
+            <div className="w-full">
+              <div
+                ref={mapElement}
+                className="w-full h-[248px] rounded-xl overflow-hidden flex content-center items-center relative"
+              />
+            </div>
           </div>
         </div>
-      </div>
-    </>
-  );
-}
-
-// {"gateway": "MichaelJacksonHEEHEE", "data": {"latitude": 53.76434, "longitude": 20.518822, "height": 24.834}}
+      </>
+    );
+  }

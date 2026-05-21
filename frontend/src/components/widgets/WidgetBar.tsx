@@ -50,7 +50,7 @@ export default function WidgetBar({
   );
 
   return (
-    <aside className="relative w-[390px] h-full bg-sidebar-bg flex flex-col p-6 gap-4 overflow-y-auto border-r border-gray-200">
+    <aside className="relative w-[390px] h-full bg-[#CECDCB] flex flex-col p-6 gap-4 overflow-y-auto border-r border-gray-200">
       <Widget
         title="Pilot Name"
         value={telemetryWithFallback.gateway ?? undefined}
@@ -63,11 +63,11 @@ export default function WidgetBar({
       />
       <Widget
         title="Connection"
-        value={telemetryWithFallback.data.connection ?? "67%"}
+        value={telemetryWithFallback.data.connection ?? "---"}
       />
       <Widget
         title="Batery"
-        value={telemetryWithFallback.data.battery ?? "67%"}
+        value={telemetryWithFallback.data.battery ?? "---%"}
       />
     </aside>
   );

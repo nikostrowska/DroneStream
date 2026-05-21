@@ -1,3 +1,5 @@
+import disconnected from "../../assets/disconnectedSvg.svg";
+
 export default function Stream({
   SerialNumber,
 }: {
@@ -5,22 +7,22 @@ export default function Stream({
 }) {
   if (!SerialNumber) {
     return (
-      <div className="max-h-[800px] relative w-full max-w-[1454px] aspect-video bg-black rounded-[32px] shadow-2xl border-2 border-white overflow-hidden mx-auto mt-5 flex items-center justify-center text-white text-xl">
-        Select a drone to start the stream.
+      <div className="max-h-[800px] relative w-full max-w-[1454px] aspect-video rounded-[24px] shadow-xl border-[0.5px] border-[#787A7D] overflow-hidden mx-auto mt-5 tracking-wide bg-[#BEBABA] flex items-center justify-center">
+        <img src={disconnected} alt="Drone Disconnected" className="w-3/4 h-3/4 object-contain select-none" draggable={false} />
       </div>
+
     );
   }
 
   return (
-    <div className="max-h-[800px] relative w-full max-w-[1454px] aspect-video bg-black rounded-[32px] shadow-2xl border-2 border-white overflow-hidden mx-auto mt-5">
+    <div className="max-h-[800px] relative w-full max-w-[1454px] aspect-video bg-black rounded-[24px] shadow-xl border-[0.5px] border-[#787A7D]  overflow-hidden mx-auto mt-5 group">
       <iframe
         src={`http://${window.location.hostname}:8889/${SerialNumber}`}
-        className="w-full h-full rounded-[16px]"
-        allow="autoplay"
+        className="w-full h-full border-0"
+        allow="autoplay; fullscreen"
         title="live stream"
         loading="lazy"
-        allowFullScreen
-      />
+        allowFullScreen/>
     </div>
   );
 }
