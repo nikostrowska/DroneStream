@@ -8,7 +8,9 @@ import type { DroneTelemetry } from "../components/widgets/TelemetryContext";
 import WidgetBar from "../components/widgets/WidgetBar";
 import Stream from "../components/stream/Stream";
 
-const apiBaseUrl = `http://${window.location.hostname}:4001/api`;
+const apiBaseUrl =
+    import.meta.env.VITE_API_BASE_URL ??
+    `http://${window.location.hostname}:4001/api`;
 
 type TelemetryPayload = DroneTelemetry & {
   serialNumber?: string | null;
@@ -179,22 +181,6 @@ export default function HomePage() {
    * and the connection is already connected.
    */
 
-  //useEffect(() => {
-  //  const conn = connectionRef.current;
-  //  if (!conn || conn.state !== signalR.HubConnectionState.Connected) {
-  //    return;
-  //  }
-
-  //  const subscribeTopics = async () => {
-  //    for (const drone of drones) {
-  //      await subscribeDroneTopic(drone.serialNumber.trim());
-  //    }
-  //  };
-
-  //  subscribeTopics().catch((error) => {
-  //    console.error("Failed to subscribe drone topics:", error);
-  //  });
-  //}, [drones]);
   useEffect(() => {
     if (drones.length === 0) return;
 

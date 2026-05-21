@@ -10,7 +10,7 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:4001
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=dronestream;Username=postgres;Password=pass
-      - Jwt__Key=qwertyuiopasdfghjklzxcvbnmqwertyuiop
+      - Jwt__Key=${JWT_KEY}
       - Jwt__Issuer=myapp
       - Jwt__Audience=myapp
       - Jwt__ExpiryMinutes=60

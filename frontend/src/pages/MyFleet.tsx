@@ -9,7 +9,9 @@ import { useEffect, useRef, useState } from "react";
 import * as signalR from "@microsoft/signalr";
 import type { AddDroneDTO, DroneDTO, UpdateDroneDTO } from "../types/drone";
 
-const apiBaseUrl = `http://${window.location.hostname}:4001/api`;
+const apiBaseUrl =
+    import.meta.env.VITE_API_BASE_URL ??
+    `http://${window.location.hostname}:4001/api`;
 
 function formatLastActivity(value?: string | null) {
   if (!value) return "No activity";
