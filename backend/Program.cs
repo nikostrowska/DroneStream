@@ -4,6 +4,9 @@ using backend.Services;
 using Microsoft.EntityFrameworkCore;
 using backend.Hubs;
 using backend.Workers;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,11 +19,32 @@ builder.Services.AddScoped<IDroneRepository, DroneRepository>();
 
 builder.Services.AddScoped<IDroneService, DroneService>();
 
+builder.Services.AddScoped<IUserRepository, UserRepository>();
+builder.Services.AddScoped<UserService>();
+builder.Services.AddScoped<JwtService>();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]!)
+            )
+        };
+    });
+builder.Services.AddAuthorization();
+
 builder.Services.AddOpenApi();
 builder.Services.AddControllers()
     .ConfigureApiBehaviorOptions(options =>
         options.SuppressModelStateInvalidFilter = false);
-
 
 builder.Services.AddHostedService<MqttWorkerService>();
 builder.Services.AddSingleton<IDroneTelemetry, DroneTelemetry>();
@@ -54,6 +78,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+app.UseAuthentication();
+app.UseAuthorization();
 
 app.UseCors("AllowAll");
 using (var scope = app.Services.CreateScope())

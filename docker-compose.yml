@@ -10,6 +10,10 @@ services:
       - ASPNETCORE_ENVIRONMENT=Development
       - ASPNETCORE_URLS=http://+:4001
       - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=dronestream;Username=postgres;Password=pass
+      - Jwt__Key=qwertyuiopasdfghjklzxcvbnmqwertyuiop
+      - Jwt__Issuer=myapp
+      - Jwt__Audience=myapp
+      - Jwt__ExpiryMinutes=60
     depends_on:
       db:
         condition: service_healthy
@@ -38,10 +42,11 @@ services:
       - "8889:8889"
       - "8189:8189/udp"
     container_name: mediamtx
-    # environment:
-      # - MTX_WEBRTCADDITIONALHOSTS=192.168.49.212 # Set this to your IP address
+    environment:
+      - MTX_WEBRTCADDITIONALHOSTS=192.168.56.1 # Set this to your IP address
     networks:
       - mediamtx_net
+
   emqx:
     image: emqx/emqx:5.8.0
     container_name: emqx
@@ -54,6 +59,7 @@ services:
       - EMQX_NODE__COOKIE="mycookie"
     networks:
       - emqx
+
   db:
     image: postgres:17-alpine
     container_name: db
