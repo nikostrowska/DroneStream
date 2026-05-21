@@ -30,33 +30,33 @@ export default function HomePage() {
   const subscribedTopicsRef = useRef<Set<string>>(new Set());
 
   /**
-    * Keep the latest drone list available for reconnect and subscription logic.
-  */
+   * Keep the latest drone list available for reconnect and subscription logic.
+   */
   useEffect(() => {
     dronesRef.current = drones;
   }, [drones]);
 
   /**
-    * Load drones independently from SignalR connection.
-    * Online/offline state is derived from telemetry heartbeats only.
-  */
+   * Load drones independently from SignalR connection.
+   * Online/offline state is derived from telemetry heartbeats only.
+   */
   useEffect(() => {
     const loadDrones = async () => {
       setLoading(true);
 
       try {
-      const response = await fetch(`${apiBaseUrl}/drone`);
-      if (!response.ok) {
-        throw new Error("Failed to load drones");
-      }
-      const data = (await response.json()) as DroneDTO[];
-      setDrones(data);
+        const response = await fetch(`${apiBaseUrl}/drone`);
+        if (!response.ok) {
+          throw new Error("Failed to load drones");
+        }
+        const data = (await response.json()) as DroneDTO[];
+        setDrones(data);
 
-      const initialStatuses: Record<string, boolean> = {};
-      data.forEach((drone) => {
-        initialStatuses[drone.serialNumber.trim()] = false;
-      });
-      setOnlineMap(initialStatuses);
+        const initialStatuses: Record<string, boolean> = {};
+        data.forEach((drone) => {
+          initialStatuses[drone.serialNumber.trim()] = false;
+        });
+        setOnlineMap(initialStatuses);
       } catch (error) {
         console.error("Error loading drones:", error);
       } finally {
@@ -68,9 +68,9 @@ export default function HomePage() {
   }, []);
 
   /**
-    * Reset or start inactivity timeout for a drone serial number.
-    * When timer expires, the drone is marked offline.
-  */
+   * Reset or start inactivity timeout for a drone serial number.
+   * When timer expires, the drone is marked offline.
+   */
   const resetDroneHeartbeat = (serialNumber: string) => {
     if (timeouts.current[serialNumber]) {
       clearTimeout(timeouts.current[serialNumber]);
@@ -84,8 +84,11 @@ export default function HomePage() {
 
   const subscribeDroneTopic = async (serialNumber: string, force = false) => {
     const connection = connectionRef.current;
-    
-    if (!connection || connection.state !== signalR.HubConnectionState.Connected) {
+
+    if (
+      !connection ||
+      connection.state !== signalR.HubConnectionState.Connected
+    ) {
       return;
     }
 
@@ -113,13 +116,13 @@ export default function HomePage() {
    */
   useEffect(() => {
     const connection = new signalR.HubConnectionBuilder()
-    .withUrl(`http://${window.location.hostname}:4001/droneTelemetryHub`)
-    .withAutomaticReconnect()
-    .build();
+      .withUrl(`http://${window.location.hostname}:4001/droneTelemetryHub`)
+      .withAutomaticReconnect()
+      .build();
     connectionRef.current = connection;
     const telemetryHandler = (payload: TelemetryPayload) => {
       const rawSerial = payload.serialNumber ?? payload.gateway;
-      
+
       if (!rawSerial) {
         console.warn(
           "Received telemetry without serialNumber or gateway:",
@@ -197,76 +200,6 @@ export default function HomePage() {
     ? telemetryMap[selectedDroneData.serialNumber.trim()]
     : undefined;
 
-        return;
-      }
-
-      const serialNumber = String(rawSerial).trim();
-      // Payload is already the full DroneTelemetry object
-      setTelemetryMap((prev) => ({
-        ...prev,
-        [serialNumber]: payload,
-      }));
-
-      setOnlineMap((prev) => ({ ...prev, [serialNumber]: true }));
-      resetDroneHeartbeat(serialNumber);
-    };
-
-    connection.on("ReceiveTelemetry", telemetryHandler);
-
-    connection.onreconnected(() => {
-      console.info("SignalR reconnected, restoring drone subscriptions...");
-      subscribeAllDrones(true).catch((error) => {
-        console.error("Failed to re-subscribe after reconnect:", error);
-      });
-    });
-
-    const startConnection = async () => {
-      try {
-        await connection.start();
-        console.log("SignalR connected", connection.state);
-        await subscribeAllDrones();
-      } catch (error) {
-        console.error("SignalR start failed:", error);
-      }
-    };
-
-    startConnection();
-    return () => {
-
-      connection.off("ReceiveTelemetry", telemetryHandler);
-      connection.stop().catch(() => {
-      /*   ignore stop errors during unmount */
-      });
-      Object.values(timeouts.current).forEach((timer) => clearTimeout(timer));
-      timeouts.current = {};
-    };
-  }, []);
-
-  /**
-   * Subscribe to all loaded drone topics whenever the list changes
-   * and the connection is already connected.
-   */
-  useEffect(() => {
-    const conn = connectionRef.current;
-    if (!conn || conn.state !== signalR.HubConnectionState.Connected) {
-      return;
-    }
-
-    const subscribeTopics = async () => {
-      for (const drone of drones) {
-        await subscribeDroneTopic(drone.serialNumber.trim()); 
-      }
-    };
-    subscribeTopics().catch((error) => {
-      console.error("Failed to subscribe drone topics:", error);
-    });
-  }, [drones]);
-  const selectedDroneData =
-  drones.find((drone) => drone.id === currDrone?.id) ?? null;
-  const selectedTelemetry = selectedDroneData
-  ? telemetryMap[selectedDroneData.serialNumber.trim()]
-  : undefined;
-  
   return (
     <div className="flex overflow-y-auto h-screen">
       <WidgetBar telemetry={selectedTelemetry} />
