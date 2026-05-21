@@ -125,6 +125,77 @@ export default function HomePage() {
           "Received telemetry without serialNumber or gateway:",
           payload,
         );
+        return;
+      }
+
+      const serialNumber = String(rawSerial).trim();
+
+      // Payload is already the full DroneTelemetry object
+      setTelemetryMap((prev) => ({
+        ...prev,
+        [serialNumber]: payload,
+      }));
+      setOnlineMap((prev) => ({ ...prev, [serialNumber]: true }));
+      resetDroneHeartbeat(serialNumber);
+    };
+
+    connection.on("ReceiveTelemetry", telemetryHandler);
+
+    connection.onreconnected(() => {
+      console.info("SignalR reconnected, restoring drone subscriptions...");
+      subscribeAllDrones(true).catch((error) => {
+        console.error("Failed to re-subscribe after reconnect:", error);
+      });
+    });
+
+    const startConnection = async () => {
+      try {
+        await connection.start();
+        console.log("SignalR connected", connection.state);
+        await subscribeAllDrones();
+      } catch (error) {
+        console.error("SignalR start failed:", error);
+      }
+    };
+
+    startConnection();
+
+    return () => {
+      connection.off("ReceiveTelemetry", telemetryHandler);
+      connection.stop().catch(() => {
+        /* ignore stop errors during unmount */
+      });
+      Object.values(timeouts.current).forEach((timer) => clearTimeout(timer));
+      timeouts.current = {};
+    };
+  }, []);
+
+  /**
+   * Subscribe to all loaded drone topics whenever the list changes
+   * and the connection is already connected.
+   */
+  useEffect(() => {
+    const conn = connectionRef.current;
+    if (!conn || conn.state !== signalR.HubConnectionState.Connected) {
+      return;
+    }
+
+    const subscribeTopics = async () => {
+      for (const drone of drones) {
+        await subscribeDroneTopic(drone.serialNumber.trim());
+      }
+    };
+
+    subscribeTopics().catch((error) => {
+      console.error("Failed to subscribe drone topics:", error);
+    });
+  }, [drones]);
+
+  const selectedDroneData =
+    drones.find((drone) => drone.id === currDrone?.id) ?? null;
+  const selectedTelemetry = selectedDroneData
+    ? telemetryMap[selectedDroneData.serialNumber.trim()]
+    : undefined;
 
         return;
       }
@@ -199,39 +270,44 @@ export default function HomePage() {
   return (
     <div className="flex overflow-y-auto h-screen">
       <WidgetBar telemetry={selectedTelemetry} />
-      <main className="flex-1 bg-[#CECDCB] flex flex-col p-8 overflow-hidden">
-        <div className="w-full max-w-[1454px] mx-auto mt-8 px-1">
-          <div className="flex justify-end items-center gap-4">
-            <Link to="/myfleet" className="text-[#787A7D] hover:text-[#676262] font-semibold underline">My Fleet</Link>
 
-            <select
-              className="w-[500px] bg-white rounded-xl px-4 py-3 border border-gray-300 shadow-lg focus:outline-none text-gray-800"
-              onChange={(event) => {
+      <main className="flex-1 bg-[#BEBABA] flex flex-col p-8 overflow-hidden">
+        <div className="flex justify-end items-center mr-3 mt-8 gap-4">
+          <Link
+            to="/myfleet"
+            className="text-white hover:text-gray-300 font-semibold no-underline"
+          >
+            My Fleet
+          </Link>
 
-                const selectedId = event.target.value;
-                const drone =
+          <select
+            className="w-[500px] bg-white rounded-xl px-4 py-3 border border-gray-300 shadow-lg focus:outline-none text-gray-800"
+            onChange={(event) => {
+              const selectedId = event.target.value;
+              const drone =
                 drones.find((item) => item.id === selectedId) ?? null;
-                setCurrDrone(drone);
-              }}
-              value={currDrone?.id ?? ""}>
-                <option value="">
-                  {loading ? "Loading fleet..." : "Select drone to monitor"}
+              setCurrDrone(drone);
+            }}
+            value={currDrone?.id ?? ""}
+          >
+            <option value="">
+              {loading ? "Loading fleet..." : "Select drone to monitor"}
+            </option>
+
+            {drones.map((drone) => {
+              const serial = drone.serialNumber.trim();
+              const isOnline = onlineMap[serial] ?? false;
+
+              return (
+                <option key={drone.id} value={drone.id}>
+                  {isOnline ? "🟢 ONLINE" : "🔴 OFFLINE"} — {drone.name} (
+                  {serial})
                 </option>
-
-                {drones.map((drone) => {
-                  const serial = drone.serialNumber.trim();
-                  const isOnline = onlineMap[serial] ?? false;
-
-                  return (  
-                    <option key={drone.id} value={drone.id}>
-                      {isOnline ? "🟢 ONLINE" : "🔴 OFFLINE"} — {drone.name} (
-                      {serial})
-                    </option>
-                  );
-                })}
-            </select>
-          </div>
+              );
+            })}
+          </select>
         </div>
+
         <div className="flex-1 mt-6">
           <Stream SerialNumber={selectedDroneData?.serialNumber ?? null} />
         </div>

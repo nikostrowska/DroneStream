@@ -32,7 +32,7 @@ public class DroneService : IDroneService
         {
             Name = request.Name,
             Model = request.Model,
-            SerialNumber = request.SerialNumber,
+            SerialNumber = request.SerialNumber.Trim(),
             IsOnline = false,
             LastActivity = null
         };
@@ -47,10 +47,15 @@ public class DroneService : IDroneService
 
         if (request.Name != null) drone.Name = request.Name;
         if (request.Model != null) drone.Model = request.Model;
-        if (request.SerialNumber != null) drone.SerialNumber = request.SerialNumber;
+        if (request.SerialNumber != null) drone.SerialNumber = request.SerialNumber.Trim();
 
         var updatedDrone = await _repo.UpdateDroneAsync(drone);
         return ToDto(updatedDrone);
+    }
+
+    public async Task<bool> UpdateDroneStatusAsync(string serialNumber, bool isOnline, DateTime? lastActivity)
+    {
+        return await _repo.UpdateStatusAsync(serialNumber, isOnline, lastActivity);
     }
 
     public async Task<bool> DeleteDroneAsync(Guid id)

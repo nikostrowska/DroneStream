@@ -49,12 +49,12 @@ namespace backend.Workers
                             _logger.LogInformation("Połączono z brokerem");
                             await _mqttClient.SubscribeAsync("thing/product/+/osd");
                             _logger.LogInformation("Nasłuchiwanie");
-                            
+
                         }
                     }
-                    catch(Exception ex)
+                    catch (Exception ex)
                     {
-                        _logger.LogWarning("Rozłączono z brokerem{Message}",ex.Message);
+                        _logger.LogWarning("Rozłączono z brokerem{Message}", ex.Message);
                     }
                     finally
                     {
