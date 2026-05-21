@@ -17,7 +17,7 @@ import { type DroneTelemetry } from "../widgets/TelemetryContext";
 
 
 export default function MapContext({ droneTelemetry, pilotTelemetry }: { droneTelemetry: DroneTelemetry | undefined, pilotTelemetry: DroneTelemetry | undefined }) {
-  const mapElement = useRef<HTMLDivElement>(undefined);
+  const mapElement = useRef<HTMLDivElement>(null);
   const mapRef = useRef<Map>(undefined);
 
 
@@ -43,6 +43,7 @@ export default function MapContext({ droneTelemetry, pilotTelemetry }: { droneTe
   );
 
   useEffect(() => {
+    if (!mapElement.current) return;
     mapRef.current = new Map({
       target: mapElement.current,
       layers: [
