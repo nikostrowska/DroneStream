@@ -22,51 +22,60 @@ export default function WidgetBar({ connection, droneName }: { connection: signa
   }
 
   const [dtelemetry, setTelemetry] = useState<DroneTelemetry | undefined>(undefined);
-  const [currDrone, setCurrDrone] = useState<string | undefined>("")
   const [location, setLocation] = useState<string | undefined>(undefined);
   const [pilotSN, setPilotSN] = useState<string | null>(null);
   const [pilotTelemetry, setPilotTelemetry] = useState<DroneTelemetry | undefined>(undefined);
 
   useEffect(() => {
-    if (!connection) return;
-    connection.invoke("UnsubscribeTopic", currDrone);
+    if (!connection || connection.state !== signalR.HubConnectionState.Connected || !droneName) return;
     connection.invoke("SubscribeTopic", droneName);
-    if (pilotSN) {
-      connection.invoke("UnsubscribeTopic", pilotSN);
-      console.log("UnsubscribeTopic", pilotSN);
-    }
-    setCurrDrone(droneName);
-    console.log("UnsubscribeTopic", currDrone);
     console.log("subscribeTopic", droneName);
-  }, [droneName]);
+
+    return () => {
+      connection.invoke("UnsubscribeTopic", droneName);
+      console.log("UnsubscribeTopic", droneName);
+    }
+  }, [connection, droneName]);
 
   useEffect(() => {
-    if (!connection) return;
+    if (!connection ||
+      connection.state !== signalR.HubConnectionState.Connected
+      || !droneName) {
+      return;
+    }
     const handler = (dto: DroneTelemetry) => {
       console.log(dto);
       setPilotSN(dto.gateway);
-      if (dto.topic == dto.gateway) {
-        setPilotTelemetry(dto);
-      } else {
+      if (dto.topic !== dto.gateway) {
         setTelemetry(dto);
         setLocation(convertDDtoDMS(dto.data.latitude, dto.data.longitude));
       }
     };
-    connection.start().then(() => {
-      connection.invoke("SubscribeTopic", droneName);
-      console.log("Initial SubscribeTopic", droneName);
-      setCurrDrone(droneName);
-    }).catch(e => console.log("Connection failed: ", e));
+    const pilotHandler = (dto: DroneTelemetry) => {
+      console.log(dto);
+      setPilotTelemetry(dto);
+    }
 
     connection.on("ReceiveTelemetry", handler);
+    connection.on("PilotTelemetry", pilotHandler);
 
+    return () => {
+      connection.off("ReceiveTelemetry", handler);
+      connection.off("PilotTelemetry", pilotHandler);
+    };
   }, [connection]);
 
   useEffect(() => {
-    if (!connection || !pilotSN) return;
+    if (!connection || connection.state !== signalR.HubConnectionState.Connected || !pilotSN) {
+      return;
+    }
     connection.invoke("SubscribeTopic", pilotSN);
     console.log("SubscribeTopic", pilotSN);
-  }, [pilotSN]);
+    return () => {
+      connection.invoke("UnsubscribeTopic", pilotSN);
+      console.log("UnsubscribeTopic", pilotSN);
+    };
+  }, [connection, pilotSN]);
 
 
   return (

@@ -11,7 +11,7 @@ namespace backend.Hubs
             await Groups.AddToGroupAsync(Context.ConnectionId, droneSn);
             if (cache.TryGetValue(droneSn, out DroneTelemetryDTO? cachedData))
             {
-                await Clients.Group(droneSn).SendAsync("ReceiveTelemetry", cachedData);
+                await Clients.Group(droneSn).SendAsync("PilotTelemetry", cachedData);
 
             }
         }
