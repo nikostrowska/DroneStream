@@ -2,61 +2,63 @@ using Microsoft.AspNetCore.SignalR;
 using backend.Hubs;
 using System.Text.Json;
 using backend.DTOs;
+using Microsoft.Extensions.Caching.Memory;
 
 
 namespace backend.Services
 {
-    public class DroneTelemetry : IDroneTelemetry
+    public class DroneTelemetry(
+        IHubContext<DroneTelemetryHub> hubContext,
+        ILogger<DroneTelemetry> logger,
+        IMemoryCache cache
+            ) : IDroneTelemetry
     {
-        private readonly IHubContext<DroneTelemetryHub> _hubContext;
-        private readonly ILogger<DroneTelemetry> _logger;
-        private readonly DroneStatusService _statusService;
+        private readonly IHubContext<DroneTelemetryHub> _hubContext = hubContext;
+        private readonly IMemoryCache _cache = cache;
+        private readonly ILogger<DroneTelemetry> _logger = logger;
 
-        public DroneTelemetry(
-            IHubContext<DroneTelemetryHub> hubContext,
-            ILogger<DroneTelemetry> logger,
-            DroneStatusService statusService)
-        {
-            _hubContext = hubContext;
-            _logger = logger;
-            _statusService = statusService;
-        }
 
         public async Task HandleMessage(string topic, string payload)
         {
+            // SN parsowany z topic
+            var topicParts = topic.Split('/', StringSplitOptions.RemoveEmptyEntries);
+            var serialNumber = topicParts.Length >= 3 ? topicParts[2].Trim() : null;
+            if (string.IsNullOrWhiteSpace(serialNumber))
+            {
+                _logger.LogWarning("Could not determine drone serial number from topic: {Topic}", topic);
+                return;
+            }
             using var jsonTelemetry = JsonDocument.Parse(payload);
             var gateway = jsonTelemetry.RootElement.GetProperty("gateway").GetString()?.Trim();
-            var serialNumber = jsonTelemetry.RootElement.GetProperty("serialNumber").GetString()?.Trim();
-            var identifier = serialNumber ?? gateway; // Use serialNumber if available, otherwise gateway
-            _logger.LogInformation("Received MQTT payload with gateway: '{Gateway}', serialNumber: '{SerialNumber}', using identifier: '{Identifier}'", gateway, serialNumber, identifier);
-            var options = new JsonSerializerOptions()
+
+            // _logger.LogInformation(
+            //     "Received MQTT payload with sn: '{SerialNumber}', gateway: '{Gateway}'",
+            //     serialNumber, gateway);
+
+            var options = new JsonSerializerOptions
             {
                 PropertyNameCaseInsensitive = true
             };
             var data = jsonTelemetry.RootElement.GetProperty("data").Deserialize<DroneTelemetryDataDto>(options);
 
-            if (!string.IsNullOrWhiteSpace(identifier))
-            {
-                _statusService.UpdateActivity(identifier);
-                _logger.LogInformation("Updated activity for drone: {Identifier}", identifier);
-            }
-
             var droneTelemetry = new DroneTelemetryDTO
             {
-                Gateway = identifier, // Use identifier instead of gateway
+                SerialNumber = serialNumber,   // SN drona z MQTT
+                Gateway = gateway,        // SN pilota z JSON
                 Data = data
             };
-            _logger.LogInformation(JsonSerializer.Serialize(droneTelemetry, new JsonSerializerOptions
-            {
-                WriteIndented = true
-            }));
 
-            var topicParts = topic.Split('/', StringSplitOptions.RemoveEmptyEntries);
-            var groupName = topicParts.Length >= 3 ? topicParts[2].Trim() : string.Empty;
-            if (!string.IsNullOrWhiteSpace(groupName))
+            // jeśli gateway == sn to telemetria pilota na 100%
+            if (droneTelemetry.Gateway == droneTelemetry.SerialNumber)
             {
-                await _hubContext.Clients.Group(groupName).SendAsync("ReceiveTelemetry", droneTelemetry);
+                _logger.LogInformation(JsonSerializer.Serialize(droneTelemetry, new JsonSerializerOptions { WriteIndented = true }));
+                _cache.Set(serialNumber, droneTelemetry, TimeSpan.FromMinutes(60));
+                await _hubContext.Clients.Group(serialNumber).SendAsync("PilotTelemetry", droneTelemetry);
             }
+
+            // _logger.LogInformation(JsonSerializer.Serialize(droneTelemetry, new JsonSerializerOptions { WriteIndented = true }));
+
+            await _hubContext.Clients.Group(serialNumber).SendAsync("ReceiveTelemetry", droneTelemetry);
         }
     }
 }

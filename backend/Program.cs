@@ -27,6 +27,7 @@ builder.Services.AddSingleton<IDroneTelemetry, DroneTelemetry>();
 builder.Services.AddSingleton<DroneStatusService>();
 builder.Services.AddHostedService<DroneMonitorWorker>();
 builder.Services.AddSignalR();
+builder.Services.AddMemoryCache();
 builder.Services.AddCors(options =>
 {
     options.AddDefaultPolicy(policy =>
