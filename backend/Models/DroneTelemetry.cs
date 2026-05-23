@@ -24,6 +24,7 @@ public class DroneTelemetry
     public double? GimbalPitch { get; set; }
     public double? GimbalRoll { get; set; }
 
-    [JsonPropertyName("gateway")]
     public string SerialNumber { get; set; } = string.Empty;
+    [JsonPropertyName("gateway")]
+    public string PilotSerialNumber { get; set; } = string.Empty;
 }

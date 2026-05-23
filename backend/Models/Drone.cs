@@ -12,4 +12,5 @@ public class Drone
     public string Name { get; set; } = string.Empty;
     public string? Model { get; set; }
     public string SerialNumber { get; set; } = string.Empty;
+    public string? PilotSerialNumber { get; set; } = string.Empty;
 }

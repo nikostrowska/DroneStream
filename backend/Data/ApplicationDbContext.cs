@@ -6,9 +6,7 @@ namespace backend.Data;
 public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-        : base(options)
-    {
-    }
+        : base(options) { }
 
     public DbSet<Drone> DroneTable => Set<Drone>();
 
@@ -21,6 +19,8 @@ public class ApplicationDbContext : DbContext
             e.Property(d => d.Model).HasMaxLength(50);
             e.Property(d => d.SerialNumber).IsRequired().HasMaxLength(25);
             e.HasIndex(d => d.SerialNumber).IsUnique();
+            e.Property(d => d.PilotSerialNumber).HasMaxLength(25);
+            e.HasIndex(d => d.PilotSerialNumber).IsUnique();
         });
     }
 }

@@ -8,19 +8,22 @@ public record DroneDTO(
     string Name,
     string? Model,
     string SerialNumber,
+    string? PilotSerialNumber,
     bool IsOnline,
     DateTime? LastActivity
 );
 
 public record AddDroneDTO(
-    [Required] [MaxLength(50)] string Name,
+    [Required][MaxLength(50)] string Name,
     [MaxLength(50)] string? Model,
-    [Required] [MaxLength(25)] string SerialNumber
+    [Required][MaxLength(25)] string SerialNumber,
+    [MaxLength(25)] string? PilotSerialNumber
 );
 
 public record UpdateDroneDTO(
     [MaxLength(50)] string? Name,
     [MaxLength(50)] string? Model,
-    [MaxLength(25)] string? SerialNumber
+    [MaxLength(25)] string? SerialNumber,
+    [MaxLength(25)] string? PilotSerialNumber
 );
 
