@@ -12,6 +12,7 @@ export interface DroneDTO {
   name: string;
   model?: string;
   serialNumber: string;
+  pilotSerialNumber: string;
   isOnline: boolean;
   lastActivity?: string | null;
 }
@@ -20,10 +21,12 @@ export interface AddDroneDTO {
   name: string;
   model?: string;
   serialNumber: string;
+  pilotSerialNumber?: string;
 }
 
 export interface UpdateDroneDTO {
   name?: string;
   model?: string;
   serialNumber?: string;
+  pilotSerialNumber?: string;
 }

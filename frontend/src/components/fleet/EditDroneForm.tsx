@@ -17,11 +17,13 @@ export default function EditDroneForm({
   const [name, setName] = useState(drone.name);
   const [model, setModel] = useState(drone.model ?? "");
   const [serialNumber, setSerialNumber] = useState(drone.serialNumber);
+  const [pilotSerialNumber, setPilotSerialNumber] = useState("");
 
   useEffect(() => {
     setName(drone.name);
     setModel(drone.model ?? "");
     setSerialNumber(drone.serialNumber);
+    setPilotSerialNumber(drone.pilotSerialNumber);
   }, [drone]);
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -30,6 +32,7 @@ export default function EditDroneForm({
       name: name.trim() || undefined,
       model: model.trim() || undefined,
       serialNumber: serialNumber.trim() || undefined,
+      pilotSerialNumber: pilotSerialNumber.trim() || undefined,
     });
   };
 
@@ -75,6 +78,15 @@ export default function EditDroneForm({
             value={serialNumber}
             onChange={(e) => setSerialNumber(e.target.value)}
             className="rounded-xl border border-[#C5C5C5] px-4 py-3 bg-[#F8F8F8] focus:outline-none"
+          />
+        </label>
+        <label className="flex flex-col gap-2 text-sm text-[#1E2126]">
+          Pilot Serial Number
+          <input
+            value={pilotSerialNumber}
+            onChange={(e) => setPilotSerialNumber(e.target.value)}
+            className="rounded-xl border border-[#C5C5C5] px-4 py-3 bg-[#F8F8F8] focus:outline-none"
+            placeholder="Serial number"
           />
         </label>
       </div>

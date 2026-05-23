@@ -1,4 +1,6 @@
 export interface DroneTelemetry {
+
+  serialNumber: string | null;
   gateway: string | null;
   data: {
     timestamp: number | null;

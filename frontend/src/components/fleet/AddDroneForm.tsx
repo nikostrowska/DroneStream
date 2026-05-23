@@ -15,6 +15,7 @@ export default function AddDroneForm({
   const [name, setName] = useState("");
   const [model, setModel] = useState("");
   const [serialNumber, setSerialNumber] = useState("");
+  const [pilotSerialNumber, setPilotSerialNumber] = useState("");
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -24,6 +25,7 @@ export default function AddDroneForm({
       name: name.trim(),
       model: model.trim() || undefined,
       serialNumber: serialNumber.trim(),
+      pilotSerialNumber: pilotSerialNumber.trim(),
     });
   };
 
@@ -73,6 +75,16 @@ export default function AddDroneForm({
             placeholder="Serial number"
           />
         </label>
+        <label className="flex flex-col gap-2 text-sm text-[#1E2126]">
+          Pilot Serial Number
+          <input
+            value={pilotSerialNumber}
+            onChange={(e) => setPilotSerialNumber(e.target.value)}
+            className="rounded-xl border border-[#C5C5C5] px-4 py-3 bg-[#F8F8F8] focus:outline-none"
+            placeholder="Serial number"
+          />
+        </label>
+
       </div>
 
       <div className="mt-6 flex flex-wrap gap-3 justify-end">
