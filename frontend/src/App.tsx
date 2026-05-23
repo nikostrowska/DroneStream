@@ -8,11 +8,14 @@ import Navbar from "./components/navbar/Navbar";
 import Home from "./pages/HomePage";
 import MyFleet from "./pages/MyFleet";
 import LoginPage from "./pages/LoginPage";
+import { SignalRProvider } from "./components/signalRContext/SignalRProvider";
 
 function App() {
   return (
     <Router>
-      <AppContent />
+      <SignalRProvider>
+        <AppContent />
+      </SignalRProvider>
     </Router>
   );
 }
