@@ -1,10 +1,10 @@
 import { useEffect, useRef, useState } from "react";
-import * as signalR from "@microsoft/signalr";
 import { Link } from "react-router-dom";
 import type { DroneDTO } from "../types/drone";
 import type { DroneTelemetry } from "../components/widgets/TelemetryContext";
 import WidgetBar from "../components/widgets/WidgetBar";
 import Stream from "../components/stream/Stream";
+import { useSignalR } from "../components/signalRContext/SignalRProvider";
 
 const apiBaseUrl =
   import.meta.env.VITE_API_BASE_URL ??
@@ -21,11 +21,14 @@ export default function HomePage() {
   const [currDrone, setCurrDrone] = useState<DroneDTO | null>(null);
 
   const [onlineMap, setOnlineMap] = useState<Record<string, boolean>>({});
-  const [telemetryMap, setTelemetryMap] = useState<
+  const [droneTelemetryMap, setDroneTelemetryMap] = useState<
+    Record<string, DroneTelemetry>
+  >({});
+  const [pilotTelemetryMap, setPilotTelemetryMap] = useState<
     Record<string, DroneTelemetry>
   >({});
   const timeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
-  const connectionRef = useRef<signalR.HubConnection | null>(null);
+  const { connection, isConnected } = useSignalR();
   const dronesRef = useRef<DroneDTO[]>([]);
   const subscribedTopicsRef = useRef<Set<string>>(new Set());
 
@@ -82,15 +85,25 @@ export default function HomePage() {
     }, 5000);
   };
 
-  const subscribeDroneTopic = async (serialNumber: string, force = false) => {
-    const connection = connectionRef.current;
-
-    if (
-      !connection ||
-      connection.state !== signalR.HubConnectionState.Connected
-    ) {
+  const subscribePilotTopic = async (serialNumber: string, force = false) => {
+    if (!connection || !isConnected) return;
+    if (!serialNumber) return;
+    if (!force && subscribedTopicsRef.current.has(serialNumber)) {
       return;
     }
+    try {
+      console.log("SubscribeTopic");
+      console.log(serialNumber);
+      await connection.invoke("SubscribeTopic", serialNumber);
+      subscribedTopicsRef.current.add(serialNumber);
+    } catch (error) {
+      console.error("Unable to subscribe to pilot topic:", serialNumber, error);
+    }
+  };
+
+  const subscribeDroneTopic = async (serialNumber: string, force = false) => {
+
+    if (!connection || !isConnected) return;
 
     if (!serialNumber) return;
     if (!force && subscribedTopicsRef.current.has(serialNumber)) {
@@ -103,25 +116,27 @@ export default function HomePage() {
     } catch (error) {
       console.error("Unable to subscribe to drone topic:", serialNumber, error);
     }
+
   };
 
-  const subscribeAllDrones = async (force = false) => {
-    for (const drone of dronesRef.current) {
-      await subscribeDroneTopic(drone.serialNumber.trim(), force);
-    }
-  };
 
   /**
    * Create and manage a single persistent SignalR connection.
    */
   useEffect(() => {
-    const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`http://${window.location.hostname}:4001/droneTelemetryHub`)
-      .withAutomaticReconnect()
-      .build();
-    connectionRef.current = connection;
-    const telemetryHandler = (payload: TelemetryPayload) => {
-      const rawSerial = payload.serialNumber ?? payload.gateway;
+    if (!connection || !isConnected) return;
+
+    const pilotTelemetryHandler = (payload: TelemetryPayload) => {
+      if (!payload) return;
+      const serialNumber = String(payload.gateway).trim();
+      setPilotTelemetryMap((prev) => ({
+        ...prev,
+        [serialNumber]: payload,
+      }));
+    };
+
+    const droneTelemetryHandler = (payload: TelemetryPayload) => {
+      const rawSerial = payload.serialNumber;
 
       if (!rawSerial) {
         console.warn(
@@ -134,7 +149,7 @@ export default function HomePage() {
       const serialNumber = String(rawSerial).trim();
 
       // Payload is already the full DroneTelemetry object
-      setTelemetryMap((prev) => ({
+      setDroneTelemetryMap((prev) => ({
         ...prev,
         [serialNumber]: payload,
       }));
@@ -142,50 +157,30 @@ export default function HomePage() {
       resetDroneHeartbeat(serialNumber);
     };
 
-    connection.on("ReceiveTelemetry", telemetryHandler);
-
-    connection.onreconnected(() => {
-      console.info("SignalR reconnected, restoring drone subscriptions...");
-      subscribeAllDrones(true).catch((error) => {
-        console.error("Failed to re-subscribe after reconnect:", error);
-      });
-    });
-
-    const startConnection = async () => {
-      try {
-        await connection.start();
-        console.log("SignalR connected", connection.state);
-        await subscribeAllDrones();
-      } catch (error) {
-        console.error("SignalR start failed:", error);
-      }
-    };
-
-    startConnection();
+    connection.on("ReceiveTelemetry", droneTelemetryHandler);
+    connection.on("PilotTelemetry", pilotTelemetryHandler);
 
     return () => {
-      connection.off("ReceiveTelemetry", telemetryHandler);
-      connection.stop().catch(() => {
-        /* ignore stop errors during unmount */
-      });
+      connection.off("ReceiveTelemetry", droneTelemetryHandler);
+      connection.off("PilotTelemetry", pilotTelemetryHandler);
       Object.values(timeouts.current).forEach((timer) => clearTimeout(timer));
       timeouts.current = {};
     };
-  }, []);
+  }, [connection]);
 
   /**
    * Subscribe to all loaded drone topics whenever the list changes
    * and the connection is already connected.
    */
   useEffect(() => {
-    const conn = connectionRef.current;
-    if (!conn || conn.state !== signalR.HubConnectionState.Connected) {
+    if (!connection || !isConnected) {
       return;
     }
 
     const subscribeTopics = async () => {
       for (const drone of drones) {
         await subscribeDroneTopic(drone.serialNumber.trim());
+        await subscribePilotTopic(drone.pilotSerialNumber.trim());
       }
     };
 
@@ -196,13 +191,18 @@ export default function HomePage() {
 
   const selectedDroneData =
     drones.find((drone) => drone.id === currDrone?.id) ?? null;
-  const selectedTelemetry = selectedDroneData
-    ? telemetryMap[selectedDroneData.serialNumber.trim()]
+  const selectedDroneTelemetry = selectedDroneData
+    ? droneTelemetryMap[selectedDroneData.serialNumber.trim()]
     : undefined;
+
+  const selectedPilotTelemetry = selectedDroneData
+    ? pilotTelemetryMap[selectedDroneData.pilotSerialNumber.trim()]
+    : undefined;
+
 
   return (
     <div className="flex overflow-y-auto h-screen">
-      <WidgetBar telemetry={selectedTelemetry} />
+      <WidgetBar droneTelemetry={selectedDroneTelemetry} pilotTelemetry={selectedPilotTelemetry} />
 
       <main className="flex-1 bg-[#BEBABA] flex flex-col p-8 overflow-hidden">
         <div className="flex justify-end items-center mr-3 mt-8 gap-4">

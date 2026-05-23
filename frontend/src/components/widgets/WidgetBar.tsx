@@ -4,11 +4,7 @@ import MapContext from "../map/MapContext";
 import TelemetryContext, { type DroneTelemetry } from "./TelemetryContext";
 import Widget from "./Widget";
 
-export default function WidgetBar({
-  telemetry,
-}: {
-  telemetry: DroneTelemetry | undefined;
-}) {
+export default function WidgetBar({ droneTelemetry, pilotTelemetry }: { droneTelemetry: DroneTelemetry | undefined, pilotTelemetry: DroneTelemetry | undefined }) {
   function convertDDtoDMS(
     lon: number | null,
     lat: number | null,
@@ -25,7 +21,8 @@ export default function WidgetBar({
     return `${dlon}°${Math.floor(mlon)}'${slon}"${dlon >= 0 ? "N" : "S"} ${dlat}°${Math.floor(mlat)}'${slat}"${dlon >= 0 ? "E" : "W"}`;
   }
 
-  const telemetryWithFallback: DroneTelemetry = telemetry ?? {
+  const telemetryWithFallback: DroneTelemetry = droneTelemetry ?? {
+    serialNumber: "abcdefgh",
     gateway: "DJI Matrice 400",
     data: {
       latitude: 59.1315,
@@ -43,10 +40,10 @@ export default function WidgetBar({
 
   const location = useMemo(
     () =>
-      telemetry
-        ? convertDDtoDMS(telemetry.data.longitude, telemetry.data.latitude)
+      droneTelemetry
+        ? convertDDtoDMS(droneTelemetry.data.longitude, droneTelemetry.data.latitude)
         : undefined,
-    [telemetry],
+    [droneTelemetry],
   );
 
   return (
@@ -56,7 +53,7 @@ export default function WidgetBar({
         value={telemetryWithFallback.gateway ?? undefined}
       />
       <TelemetryContext telemetry={telemetryWithFallback} />
-      <MapContext telemetry={telemetry} />
+      <MapContext droneTelemetry={droneTelemetry} pilotTelemetry={pilotTelemetry} />
       <Widget
         title="Coordinates"
         value={location ?? convertDDtoDMS(53.764341, 20.518751)}

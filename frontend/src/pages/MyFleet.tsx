@@ -6,9 +6,9 @@ import moreIcon from "../assets/moreIcon.svg";
 import offlinePhoto from "../assets/offlinePhoto.png";
 import noPhotoAvailable from "../assets/noPhotoAvailable.png";
 import { useEffect, useRef, useState } from "react";
-import * as signalR from "@microsoft/signalr";
 import type { AddDroneDTO, DroneDTO, UpdateDroneDTO } from "../types/drone";
 
+import { useSignalR } from "../components/signalRContext/SignalRProvider";
 const apiBaseUrl =
   import.meta.env.VITE_API_BASE_URL ??
   `http://${window.location.hostname}:4001/api`;
@@ -26,13 +26,9 @@ export default function MyFleet() {
   const [loading, setLoading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [onlineMap, setOnlineMap] = useState<Record<string, boolean>>({});
-  const connectionRef = useRef<signalR.HubConnection | null>(null);
-  const dronesRef = useRef<DroneDTO[]>([]);
-  const timeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
+  const { connection, isConnected } = useSignalR();
 
-  useEffect(() => {
-    dronesRef.current = drones;
-  }, [drones]);
+  const timeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
   const resetDroneHeartbeat = (serialNumber: string) => {
     if (timeouts.current[serialNumber]) {
@@ -70,92 +66,42 @@ export default function MyFleet() {
 
   useEffect(() => {
     loadDrones();
-
-    const connection = new signalR.HubConnectionBuilder()
-      .withUrl(`http://${window.location.hostname}:4001/droneTelemetryHub`)
-      .withAutomaticReconnect()
-      .build();
-
-    connectionRef.current = connection;
-
-    const telemetryHandler = (payload: {
-      serialNumber?: string;
-      gateway?: string;
-    }) => {
-      const rawSerial = payload.serialNumber ?? payload.gateway;
-      if (!rawSerial) {
-        console.warn(
-          "MyFleet SignalR: telemetry missing serialNumber/gateway",
-          payload,
-        );
-        return;
-      }
-
-      const normalized = rawSerial.trim();
-      setOnlineMap((prev) => ({ ...prev, [normalized]: true }));
-      resetDroneHeartbeat(normalized);
-    };
-
-    const subscribeAllDrones = async () => {
-      if (connection.state !== signalR.HubConnectionState.Connected) return;
-
-      for (const drone of dronesRef.current) {
-        try {
-          await connection.invoke("SubscribeTopic", drone.serialNumber.trim());
-        } catch (error) {
-          console.error(
-            "MyFleet SignalR subscribe failed for",
-            drone.serialNumber,
-            error,
-          );
-        }
-      }
-    };
-
-    connection.on("ReceiveTelemetry", telemetryHandler);
-    connection.onreconnected(() => {
-      console.info("MyFleet SignalR reconnected, restoring subscriptions...");
-      subscribeAllDrones().catch((error) => {
-        console.error("MyFleet re-subscribe failed:", error);
-      });
-    });
-
-    connection
-      .start()
-      .then(() => {
-        console.log("MyFleet SignalR connected");
-        return subscribeAllDrones();
-      })
-      .catch((error) => {
-        console.error("MyFleet SignalR connection failed:", error);
-      });
-
     return () => {
-      connection.off("ReceiveTelemetry", telemetryHandler);
-      connection.stop().catch(() => {
-        /* ignore stop errors during unmount */
-      });
       Object.values(timeouts.current).forEach((timer) => clearTimeout(timer));
       timeouts.current = {};
     };
   }, []);
 
   useEffect(() => {
-    const conn = connectionRef.current;
-    if (!conn || conn.state !== signalR.HubConnectionState.Connected) {
-      return;
-    }
+    if (!connection || !isConnected) return;
+
+    const telemetryHandler = (payload: { serialNumber?: string; gateway?: string; }) => {
+      const rawSerial = payload.serialNumber ?? payload.gateway;
+      if (!rawSerial) {
+        console.warn("MyFleet SignalR: telemetry missing serialNumber/gateway", payload);
+        return;
+      }
+      const normalized = rawSerial.trim();
+      setOnlineMap((prev) => ({ ...prev, [normalized]: true }));
+      resetDroneHeartbeat(normalized);
+    };
+
+    connection.on("ReceiveTelemetry", telemetryHandler);
+
+    return () => {
+      connection.off("ReceiveTelemetry", telemetryHandler);
+    };
+  }, [connection]);
+
+  useEffect(() => {
+    if (!connection || !isConnected) return;
 
     const subscribeTopics = async () => {
       for (const drone of drones) {
         try {
-          await conn.invoke("SubscribeTopic", drone.serialNumber.trim());
+          await connection.invoke("SubscribeTopic", drone.serialNumber.trim());
         } catch (error) {
-          console.error(
-            "MyFleet subscribe failed for",
-            drone.serialNumber,
-            error,
-          );
+          console.error("MyFleet subscribe failed for", drone.serialNumber, error);
         }
       }
     };
@@ -163,7 +109,7 @@ export default function MyFleet() {
     subscribeTopics().catch((error) => {
       console.error("MyFleet failed to subscribe on drones update:", error);
     });
-  }, [drones]);
+  }, [connection, isConnected, drones]);
 
   const handleCreateDrone = async (payload: AddDroneDTO) => {
     setSubmitting(true);
@@ -334,26 +280,23 @@ export default function MyFleet() {
                           <span className="flex justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <span
-                                className={`w-3 h-3 rounded-full ${
-                                  isOnline
-                                    ? "bg-[#00A323] animate-pulse"
-                                    : "bg-[#B00000]"
-                                }`}
+                                className={`w-3 h-3 rounded-full ${isOnline
+                                  ? "bg-[#00A323] animate-pulse"
+                                  : "bg-[#B00000]"
+                                  }`}
                               />
 
                               <p
-                                className={`text-md font-medium ${
-                                  isOnline ? "text-[#00A323]" : "text-[#B00000]"
-                                }`}
+                                className={`text-md font-medium ${isOnline ? "text-[#00A323]" : "text-[#B00000]"
+                                  }`}
                               >
                                 {isOnline ? "online" : "offline"}
                               </p>
                             </div>
 
                             <p
-                              className={`text-md font-medium ${
-                                isOnline ? "text-[#00A323]" : "text-[#B00000]"
-                              }`}
+                              className={`text-md font-medium ${isOnline ? "text-[#00A323]" : "text-[#B00000]"
+                                }`}
                             >
                               {isOnline
                                 ? formatLastActivity(drone.lastActivity)
@@ -392,4 +335,5 @@ export default function MyFleet() {
       </div>
     </div>
   );
+
 }
