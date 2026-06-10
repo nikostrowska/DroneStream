@@ -191,6 +191,24 @@ export default function MyFleet() {
     setOpenMenuId(null);
   };
 
+  const handleClickOutsideMenu = (event: MouseEvent) => {
+    const target = event.target as HTMLElement;
+    if (!target.closest(".drone-option-menu")) {
+      setOpenMenuId(null);
+    }
+  };
+
+  useEffect(() => {
+    if (openMenuId) {
+      document.addEventListener("click", handleClickOutsideMenu);
+    } else {
+      document.removeEventListener("click", handleClickOutsideMenu);
+    }
+    return () => {
+      document.removeEventListener("click", handleClickOutsideMenu);
+    };
+  }, [openMenuId]);
+
   return (
     <div className="flex h-screen w-screen overflow-hidden flex-col">
       <div className="flex flex-1 overflow-y-auto">
@@ -296,11 +314,12 @@ export default function MyFleet() {
                           <div className="relative inline-block">
                             <button
                               className="p-1 hover:bg-white rounded-md transition cursor-pointer"
-                              onClick={() =>
+                              onClick={(e) => {
+                                e.stopPropagation();
                                 setOpenMenuId(
                                   openMenuId === drone.id ? null : drone.id,
-                                )
-                              }
+                                );
+                              }}
                             >
                               <img
                                 src={moreIcon}
@@ -313,6 +332,7 @@ export default function MyFleet() {
                               <DroneOptionMenu
                                 onEdit={() => handleEditClick(drone)}
                                 onDelete={() => handleDeleteDrone(drone.id)}
+                                onClose={() => setOpenMenuId(null)}
                               />
                             )}
                           </div>

@@ -1,12 +1,14 @@
 import editIcon from "../../assets/EditIcon.svg";
 import deleteIcon from "../../assets/deleteIcon.svg";
+import { useEffect } from "react";
 
 type Props = {
   onEdit: () => void;
   onDelete: () => void;
+  onClose: () => void;
 };
 
-export default function DroneOptionMenu({ onEdit, onDelete }: Props) {
+export default function DroneOptionMenu({ onEdit, onDelete, onClose }: Props) {
   return (
     <div className="absolute left-1/2 -translate-x-1/2 top-full mt-2 bg-surface-strong shadow-lg p-2 flex gap-2 border border-theme z-50 theme-transition">
       <button
