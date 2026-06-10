@@ -49,28 +49,28 @@ docker compose up
 ```
 DroneStream/
 ├── backend/                    # ASP.NET Core API
-│   ├── Controllers/            # Endpointy HTTP
-│   ├── Data/                   # Kontekst bazy danych
-│   ├── DTOs/                   # Obiekty transferu danych
+│   ├── Controllers/            # HTTP endpoints
+│   ├── Data/                   # Database context
+│   ├── DTOs/                   # Data transfer objects
 │   ├── Hubs/                   # SignalR (WebSocket)
-│   ├── Models/                 # Modele domenowe
-│   ├── Repositories/           # Warstwa dostępu do danych
-│   ├── Services/               # Logika biznesowa
-│   ├── Workers/                # Obsługa brokera
-│   ├── Program.cs              # Punkt wejścia aplikacji
+│   ├── Models/                 # Domain models
+│   ├── Repositories/           # Data access layer
+│   ├── Services/               # Business logic
+│   ├── Workers/                # MQTT broker handlers
+│   ├── Program.cs              # Application entry point
 │   └── Dockerfile
 ├── frontend/                   # React + Vite + TypeScript
 │   ├── src/
-│   │   ├── assets/             # Statyczne zasoby
-│   │   ├── components/         # Komponenty UI
-│   │   ├── pages/              # Widoki/strony
-│   │   └── types/              # Typy TypeScript
+│   │   ├── assets/             # Static resources
+│   │   ├── components/         # UI components
+│   │   ├── pages/              # Views / pages
+│   │   └── types/              # TypeScript types
 │   ├── index.html
 │   └── Dockerfile
-├── mediamtx/                   # Serwer strumieniowania wideo
+├── mediamtx/                   # Video streaming server
 │   └── Dockerfile
-├── img/                        # Makiety i zasoby graficzne
-├── docker-compose.yml          # Orchestracja kontenerów
+├── img/                        # Mockups and graphic assets
+├── docker-compose.yml          # Container orchestration
 └── .gitignore
 ```
 
