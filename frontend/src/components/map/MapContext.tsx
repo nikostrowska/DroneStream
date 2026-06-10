@@ -45,8 +45,8 @@ export default function MapContext({ droneTelemetry, pilotTelemetry }: { droneTe
   );
   useEffect(() => {
     if (!mapElement.current) return;
-    droneRef.current = new Point(fromLonLat([20.4, 53.7435]));
-    pilotRef.current = new Point(fromLonLat([20.456, 53.7435]));
+    droneRef.current = new Point(fromLonLat([]));
+    pilotRef.current = new Point(fromLonLat([]));
     droneFeatureRef.current = new Feature(droneRef.current);
     pilotFeatureRef.current = new Feature(pilotRef.current);
     droneFeatureRef.current.setStyle(droneMarkerStyle);
@@ -75,7 +75,7 @@ export default function MapContext({ droneTelemetry, pilotTelemetry }: { droneTe
   }, [droneMarkerStyle, pilotMarkerStyle]);
 
   useEffect(() => {
-    if (!mapRef.current || !pilotRef.current) return;
+    if (!mapRef.current || !pilotRef.current || !pilotFeatureRef.current) return;
     const lon = pilotTelemetry?.data?.longitude;
     const lat = pilotTelemetry?.data?.latitude;
     if (lon != null && lat != null) {

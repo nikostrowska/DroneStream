@@ -23,11 +23,11 @@ export default function WidgetBar({ droneTelemetry, pilotTelemetry }: { droneTel
 
   const telemetryWithFallback: DroneTelemetry = droneTelemetry ?? {
     serialNumber: "abcdefgh",
-    gateway: "DJI Matrice 400",
+    gateway: "---",
     data: {
-      latitude: 59.1315,
-      longitude: 20.2135,
-      height: 20.3252,
+      latitude: null,
+      longitude: null,
+      height: null,
       timestamp: null,
       absoluteAltitude: null,
       gimbalYaw: null,
@@ -56,7 +56,7 @@ export default function WidgetBar({ droneTelemetry, pilotTelemetry }: { droneTel
       <MapContext droneTelemetry={droneTelemetry} pilotTelemetry={pilotTelemetry} />
       <Widget
         title="Coordinates"
-        value={location ?? convertDDtoDMS(53.764341, 20.518751)}
+        value={location ?? "---"}
       />
       <Widget
         title="Connection"
