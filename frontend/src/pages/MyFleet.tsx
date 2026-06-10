@@ -9,6 +9,7 @@ import { useEffect, useRef, useState } from "react";
 import type { AddDroneDTO, DroneDTO, UpdateDroneDTO } from "../types/drone";
 
 import { useSignalR } from "../components/signalRContext/SignalRProvider";
+import { useNavigate } from "react-router-dom";
 const apiBaseUrl =
   import.meta.env.VITE_API_BASE_URL ??
   `http://${window.location.hostname}:4001/api`;
@@ -27,6 +28,7 @@ export default function MyFleet() {
   const [submitting, setSubmitting] = useState(false);
   const [onlineMap, setOnlineMap] = useState<Record<string, boolean>>({});
   const { connection, isConnected } = useSignalR();
+  const navigate = useNavigate();
 
   const timeouts = useRef<Record<string, ReturnType<typeof setTimeout>>>({});
 
@@ -321,7 +323,7 @@ export default function MyFleet() {
                           </div>
                         </div>
 
-                        <button className="bg-[#7E2A2A] hover:bg-[#701C1C] text-white mt-2 w-[133px] h-[28px] px-3 py-1 rounded-full text-sm mx-auto cursor-pointer">
+                        <button onClick={() => { navigate("/", { state: { currDrone: drone } }); }} className="bg-[#7E2A2A] hover:bg-[#701C1C] text-white mt-2 w-[133px] h-[28px] px-3 py-1 rounded-full text-sm mx-auto cursor-pointer">
                           View
                         </button>
                       </div>

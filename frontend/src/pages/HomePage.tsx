@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import type { DroneDTO } from "../types/drone";
 import type { DroneTelemetry } from "../components/widgets/TelemetryContext";
 import WidgetBar from "../components/widgets/WidgetBar";
@@ -16,9 +16,11 @@ type TelemetryPayload = DroneTelemetry & {
 };
 
 export default function HomePage() {
+  const location = useLocation();
+  const passedCurrDrone = location.state?.currDrone || null;
   const [drones, setDrones] = useState<DroneDTO[]>([]);
   const [loading, setLoading] = useState(false);
-  const [currDrone, setCurrDrone] = useState<DroneDTO | null>(null);
+  const [currDrone, setCurrDrone] = useState<DroneDTO | null>(passedCurrDrone);
 
   const [onlineMap, setOnlineMap] = useState<Record<string, boolean>>({});
   const [droneTelemetryMap, setDroneTelemetryMap] = useState<
