@@ -1,42 +1,80 @@
-# DroneStream
+# 🚁 DroneStream
 
-## Opis projektu
+> Real-time drone fleet monitoring and management platform.
 
-DroneStream to aplikacja umożliwiająca monitorowanie i zarządzanie flotą dronów w czasie rzeczywistym.
+## 📖 Overview
 
-## Zakres
+DroneStream is a web application for real-time monitoring and management of drone fleets.
+It streams live video feeds, collects telemetry data, and visualizes drone positions on an interactive map,
+all simultaneously across multiple devices.
 
-- umożliwia strumieniowanie obrazu z dronów w czasie rzeczywistym
-- prezentuje aktualną pozycję drona na interaktywnej mapie
-- pozwala na równoległe monitorowanie wielu urządzeń
+## ✨ Features
 
-## Makieta interfejsu
+- **Live video streaming** from drones via mediamtx
+- **Telemetry ingestion** from `.srt` data packets sent by drones
+- **Interactive map** showing real-time drone positions (OpenLayers)
+- **Parallel monitoring** of multiple drones at once
+- **Real-time communication** via SignalR (WebSocket)
+- **Message broker** integration via EMQX (MQTT)
 
-![Makieta UI](img/makieta_ui.png)
+## 🖼️ UI Preview
 
-## Technologie
+![UI Mockup](img/makieta_ui.png)
+
+## 🛠️ Tech Stack
 
 - .NET 10
-- Docker
+- SignalR
 - React
+- TypeScript
+- Vite
 - OpenLayers
 - mediamtx
-- emqx
-- signalR
+- EMQX (MQTT broker)
+- Docker
 
-## Testowanie lokalnie
+## 🔧 Requirements
 
-Na tym etapie jest możliwość przetestowania:
+[Docker](https://www.docker.com/) & Docker Compose
 
-- frontend'u wpisując polecenia w katalogu /frontend `npm i ` potem ` npm run build`
-- backend'u wpisując polecenia w katalogu /backend `dotnet run `
-- backend'u z frontend'em wpisując `docker compose up`
+## 🚀 Getting Started
 
-## Struktura projektu
+```bash
+git clone https://github.com/nikostrowska/DroneStream.git
+docker compose up
+```
 
-## Uruchomienie aplikacji
+## 📁 Project Structure
 
-## Autorzy
+```
+DroneStream/
+├── backend/                    # ASP.NET Core API
+│   ├── Controllers/            # Endpointy HTTP
+│   ├── Data/                   # Kontekst bazy danych
+│   ├── DTOs/                   # Obiekty transferu danych
+│   ├── Hubs/                   # SignalR (WebSocket)
+│   ├── Models/                 # Modele domenowe
+│   ├── Repositories/           # Warstwa dostępu do danych
+│   ├── Services/               # Logika biznesowa
+│   ├── Workers/                # Obsługa brokera
+│   ├── Program.cs              # Punkt wejścia aplikacji
+│   └── Dockerfile
+├── frontend/                   # React + Vite + TypeScript
+│   ├── src/
+│   │   ├── assets/             # Statyczne zasoby
+│   │   ├── components/         # Komponenty UI
+│   │   ├── pages/              # Widoki/strony
+│   │   └── types/              # Typy TypeScript
+│   ├── index.html
+│   └── Dockerfile
+├── mediamtx/                   # Serwer strumieniowania wideo
+│   └── Dockerfile
+├── img/                        # Makiety i zasoby graficzne
+├── docker-compose.yml          # Orchestracja kontenerów
+└── .gitignore
+```
+
+## 👥 Authors
 
 - [Vladys Berezhnyi](https://github.com/WladekBBC)
 - [Krystian Czajkowski](https://github.com/krystianczajkowski)

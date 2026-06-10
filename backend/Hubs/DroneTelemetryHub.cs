@@ -7,8 +7,6 @@ namespace backend.Hubs
 {
     public class DroneTelemetryHub : Hub
     {
-
-
         public async Task SubscribeTopic(string SerialNumber)
         {
             var normalized = SerialNumber?.Trim();
