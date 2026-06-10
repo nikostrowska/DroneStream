@@ -77,10 +77,16 @@ export default function MyFleet() {
   useEffect(() => {
     if (!connection || !isConnected) return;
 
-    const telemetryHandler = (payload: { serialNumber?: string; gateway?: string; }) => {
+    const telemetryHandler = (payload: {
+      serialNumber?: string;
+      gateway?: string;
+    }) => {
       const rawSerial = payload.serialNumber ?? payload.gateway;
       if (!rawSerial) {
-        console.warn("MyFleet SignalR: telemetry missing serialNumber/gateway", payload);
+        console.warn(
+          "MyFleet SignalR: telemetry missing serialNumber/gateway",
+          payload,
+        );
         return;
       }
       const normalized = rawSerial.trim();
@@ -103,7 +109,11 @@ export default function MyFleet() {
         try {
           await connection.invoke("SubscribeTopic", drone.serialNumber.trim());
         } catch (error) {
-          console.error("MyFleet subscribe failed for", drone.serialNumber, error);
+          console.error(
+            "MyFleet subscribe failed for",
+            drone.serialNumber,
+            error,
+          );
         }
       }
     };
@@ -184,20 +194,20 @@ export default function MyFleet() {
   return (
     <div className="flex h-screen w-screen overflow-hidden flex-col">
       <div className="flex flex-1 overflow-y-auto">
-        <main className="flex-1 h-full bg-[#CECDCB] flex flex-col p-8 overflow-hidden items-center">
+        <main className="flex-1 h-full bg-surface flex flex-col p-8 overflow-hidden items-center theme-transition">
           <div className="w-full max-w-7xl mx-auto flex flex-col gap-8">
             <div className="flex items-end justify-between gap-4">
               <div className="flex-none">
                 <RefreshButton onRefresh={loadDrones} />
               </div>
 
-              <h1 className="flex-1 text-center text-[#7E2A2A] text-8xl font-jaro">
+              <h1 className="flex-1 text-center text-accent text-8xl font-jaro">
                 <span className="tracking-[0.5em]">MY FLEET</span>
               </h1>
 
               <button
                 type="button"
-                className="flex-none w-[220px] bg-[#7E2A2A] hover:bg-[#701C1C] font-semibold text-white py-4 rounded-full focus:outline-none focus:shadow-outline"
+                className="flex-none w-[220px] bg-accent hover:bg-accent-dark font-semibold text-white py-4 rounded-full focus:outline-none focus:shadow-outline"
                 onClick={() => {
                   setShowAddForm(true);
                   setActiveEditDrone(null);
@@ -220,7 +230,7 @@ export default function MyFleet() {
                 }}
                 onClick={() => setShowAddForm(false)}
               >
-                <div onClick={(e) => e.stopPropagation()} >
+                <div onClick={(e) => e.stopPropagation()}>
                   <AddDroneForm
                     onSubmit={handleCreateDrone}
                     onCancel={() => setShowAddForm(false)}
@@ -243,7 +253,6 @@ export default function MyFleet() {
                 }}
                 onClick={() => setActiveEditDrone(null)}
               >
-
                 <div onClick={(e) => e.stopPropagation()}>
                   <EditDroneForm
                     drone={activeEditDrone}
@@ -257,11 +266,11 @@ export default function MyFleet() {
 
             <div className="w-full max-w-7xl max-h-[70vh] overflow-y-auto pl-8 pr-6 mt-2 custom-scroll">
               {loading ? (
-                <div className="text-center text-[#1E2126] py-8">
+                <div className="text-center text-primary py-8">
                   Loading drones…
                 </div>
               ) : drones.length === 0 ? (
-                <div className="text-center text-[#1E2126] py-8">
+                <div className="text-center text-primary py-8">
                   No drones available. Add one to start.
                 </div>
               ) : (
@@ -276,17 +285,17 @@ export default function MyFleet() {
                       >
                         <div className="flex justify-between items-start gap-3">
                           <div className="min-w-0">
-                            <h3 className="truncate overflow-hidden text-lg font-semibold text-[#1E2126] group-hover:text-black transition">
+                            <h3 className="truncate overflow-hidden text-lg font-semibold text-primary group-hover:text-primary transition">
                               {drone.name}
                             </h3>
-                            <p className="text-sm text-[#5F5F5F] truncate">
+                            <p className="text-sm text-secondary truncate">
                               {drone.model ?? drone.serialNumber}
                             </p>
                           </div>
 
                           <div className="relative inline-block">
                             <button
-                              className="p-1 hover:bg-white/30 rounded-md transition cursor-pointer"
+                              className="p-1 hover:bg-white rounded-md transition cursor-pointer"
                               onClick={() =>
                                 setOpenMenuId(
                                   openMenuId === drone.id ? null : drone.id,
@@ -313,23 +322,26 @@ export default function MyFleet() {
                           <span className="flex justify-between mb-2">
                             <div className="flex items-center gap-2">
                               <span
-                                className={`w-3 h-3 rounded-full ${isOnline
-                                  ? "bg-[#00A323] animate-pulse"
-                                  : "bg-[#B00000]"
-                                  }`}
+                                className={`w-3 h-3 rounded-full ${
+                                  isOnline
+                                    ? "bg-[#00A323] animate-pulse"
+                                    : "bg-[#B00000]"
+                                }`}
                               />
 
                               <p
-                                className={`text-md font-medium ${isOnline ? "text-[#00A323]" : "text-[#B00000]"
-                                  }`}
+                                className={`text-md font-medium ${
+                                  isOnline ? "text-[#00A323]" : "text-[#B00000]"
+                                }`}
                               >
                                 {isOnline ? "online" : "offline"}
                               </p>
                             </div>
 
                             <p
-                              className={`text-md font-medium ${isOnline ? "text-[#00A323]" : "text-[#B00000]"
-                                }`}
+                              className={`text-md font-medium ${
+                                isOnline ? "text-[#00A323]" : "text-[#B00000]"
+                              }`}
                             >
                               {isOnline
                                 ? formatLastActivity(drone.lastActivity)
@@ -354,7 +366,12 @@ export default function MyFleet() {
                           </div>
                         </div>
 
-                        <button onClick={() => { navigate("/", { state: { currDrone: drone } }); }} className="bg-[#7E2A2A] hover:bg-[#701C1C] text-white mt-2 w-[133px] h-[28px] px-3 py-1 rounded-full text-sm mx-auto cursor-pointer">
+                        <button
+                          onClick={() => {
+                            navigate("/", { state: { currDrone: drone } });
+                          }}
+                          className="bg-[#7E2A2A] hover:bg-[#701C1C] text-white mt-2 w-[133px] h-[28px] px-3 py-1 rounded-full text-sm mx-auto cursor-pointer"
+                        >
                           View
                         </button>
                       </div>
@@ -368,5 +385,4 @@ export default function MyFleet() {
       </div>
     </div>
   );
-
 }

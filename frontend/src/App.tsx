@@ -9,14 +9,17 @@ import Home from "./pages/HomePage";
 import MyFleet from "./pages/MyFleet";
 import LoginPage from "./pages/LoginPage";
 import { SignalRProvider } from "./components/signalRContext/SignalRProvider";
+import { ThemeProvider } from "./contexts/ThemeContext";
 
 function App() {
   return (
-    <Router>
-      <SignalRProvider>
-        <AppContent />
-      </SignalRProvider>
-    </Router>
+    <ThemeProvider>
+      <Router>
+        <SignalRProvider>
+          <AppContent />
+        </SignalRProvider>
+      </Router>
+    </ThemeProvider>
   );
 }
 
@@ -25,10 +28,7 @@ function AppContent() {
   const isLogin = location.pathname === "/login";
 
   return (
-    <div
-      className="flex h-screen w-screen overflow-hidden flex-col"
-      style={{ backgroundColor: isLogin ? "transparent" : "#BEBABA" }}
-    >
+    <div className={`flex h-screen w-screen overflow-hidden flex-col ${isLogin ? "bg-transparent" : "bg-page theme-transition"}`}>
       {!isLogin && <Navbar />}
 
       <Routes>

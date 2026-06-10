@@ -206,7 +206,7 @@ export default function HomePage() {
     <div className="flex overflow-y-auto h-screen">
       <WidgetBar droneTelemetry={selectedDroneTelemetry} pilotTelemetry={selectedPilotTelemetry} />
 
-      <main className="flex-1 bg-[#BEBABA] flex flex-col p-8 overflow-hidden">
+      <main className="flex-1 bg-surface flex flex-col p-8 overflow-hidden theme-transition">
         <div className="flex justify-end items-center mr-3 mt-8 gap-4">
           <Link
             to="/myfleet"
@@ -216,7 +216,7 @@ export default function HomePage() {
           </Link>
 
           <select
-            className="w-[500px] bg-white rounded-xl px-4 py-3 border border-gray-300 shadow-lg focus:outline-none text-gray-800"
+            className="w-[500px] bg-surface-strong rounded-xl px-4 py-3 border border-theme shadow-lg focus:outline-none text-primary"
             onChange={(event) => {
               const selectedId = event.target.value;
               const drone =

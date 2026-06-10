@@ -38,54 +38,54 @@ export default function EditDroneForm({
 
   return (
     <form
-      className="w-full max-w-3xl bg-white border border-[#D7D7D7] rounded-3xl p-6 shadow-xl mb-8"
+      className="w-full max-w-3xl bg-surface-strong border border-[#D7D7D7] rounded-3xl p-6 shadow-xl mb-8"
       onSubmit={handleSubmit}
     >
       <div className="flex items-center justify-between mb-5">
         <div>
-          <h2 className="text-2xl font-semibold text-[#1E2126]">Edit drone</h2>
-          <p className="text-sm text-[#5F5F5F] mt-1">
+          <h2 className="text-2xl font-semibold text-primary">Edit drone</h2>
+          <p className="text-sm text-secondary mt-1">
             Update the drone details based on the backend DTO.
           </p>
         </div>
-        <span className="text-sm text-[#7E2A2A]">
+        <span className="text-sm text-accent">
           Status: {drone.isOnline ? "online" : "offline"}
         </span>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <label className="flex flex-col gap-2 text-sm text-[#1E2126]">
+        <label className="flex flex-col gap-2 text-sm text-primary">
           Name*
           <input
             value={name}
             onChange={(e) => setName(e.target.value)}
-            className="rounded-xl border border-[#C5C5C5] px-4 py-3 bg-[#F8F8F8] focus:outline-none"
+            className="rounded-xl border border-theme px-4 py-3 bg-surface-strong focus:outline-none text-primary"
           />
         </label>
 
-        <label className="flex flex-col gap-2 text-sm text-[#1E2126]">
+        <label className="flex flex-col gap-2 text-sm text-primary">
           Model
           <input
             value={model}
             onChange={(e) => setModel(e.target.value)}
-            className="rounded-xl border border-[#C5C5C5] px-4 py-3 bg-[#F8F8F8] focus:outline-none"
+            className="rounded-xl border border-theme px-4 py-3 bg-surface-strong focus:outline-none text-primary"
           />
         </label>
 
-        <label className="flex flex-col gap-2 text-sm text-[#1E2126]">
+        <label className="flex flex-col gap-2 text-sm text-primary">
           Serial Number*
           <input
             value={serialNumber}
             onChange={(e) => setSerialNumber(e.target.value)}
-            className="rounded-xl border border-[#C5C5C5] px-4 py-3 bg-[#F8F8F8] focus:outline-none"
+            className="rounded-xl border border-theme px-4 py-3 bg-surface-strong focus:outline-none text-primary"
           />
         </label>
-        <label className="flex flex-col gap-2 text-sm text-[#1E2126]">
+        <label className="flex flex-col gap-2 text-sm text-primary">
           Pilot Serial Number
           <input
             value={pilotSerialNumber}
             onChange={(e) => setPilotSerialNumber(e.target.value)}
-            className="rounded-xl border border-[#C5C5C5] px-4 py-3 bg-[#F8F8F8] focus:outline-none"
+            className="rounded-xl border border-theme px-4 py-3 bg-surface-strong focus:outline-none text-primary"
             placeholder="Serial number"
           />
         </label>

@@ -47,7 +47,7 @@ export default function WidgetBar({ droneTelemetry, pilotTelemetry }: { droneTel
   );
 
   return (
-    <aside className="relative w-[390px] h-full bg-[#CECDCB] flex flex-col p-6 gap-4 overflow-y-auto border-r border-gray-200">
+    <aside className="relative w-[390px] h-full bg-surface flex flex-col p-6 gap-4 overflow-y-auto border-r border-theme theme-transition">
       <Widget
         title="Pilot Name"
         value={telemetryWithFallback.gateway ?? undefined}

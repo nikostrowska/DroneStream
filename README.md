@@ -23,6 +23,7 @@ DroneStream to aplikacja umożliwiająca monitorowanie i zarządzanie flotą dro
 - mediamtx
 - emqx
 - signalR
+- Vite
 
 ## Testowanie lokalnie
 

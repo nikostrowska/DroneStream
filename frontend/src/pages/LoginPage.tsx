@@ -15,20 +15,20 @@ export default function LoginPage() {
           <div className="absolute top-12 left-12 text-6xl font-jersey font-bold">
             <div className="absolute inset-0 blur-[6px] opacity-60">
               <Link to="/">
-                <span className="text-[#1E2126]">DRONE</span>
-                <span className="text-[#7E2A2A]">STREAM</span>
+                <span className="text-primary">DRONE</span>
+                <span className="text-accent">STREAM</span>
               </Link>
             </div>
             <div className="relative">
               <Link to="/">
-                <span className="text-[#1E2126]">DRONE</span>
-                <span className="text-[#7E2A2A]">STREAM</span>
+                <span className="text-primary">DRONE</span>
+                <span className="text-accent">STREAM</span>
               </Link>
             </div>
           </div>
 
           <div>
-            <h1 className="text-[#7E2A2A] text-8xl font-jaro -mb-[0.750rem] relative z-10 text-center underline decoration-4 underline-offset-[10px] text-shadow">
+            <h1 className="text-accent text-8xl font-jaro -mb-[0.750rem] relative z-10 text-center underline decoration-4 underline-offset-[10px] text-shadow">
               <span className="tracking-[0.5em]">SIGN IN</span>
             </h1>
 
@@ -39,7 +39,7 @@ export default function LoginPage() {
               <div className="mb-10 w-[378px] mx-auto ">
                 <label
                   htmlFor="email"
-                  className="block text-[#1E2126] text-3xl font-medium mb-3"
+                  className="block text-primary text-3xl font-medium mb-3"
                 >
                   E-mail
                 </label>
@@ -47,14 +47,14 @@ export default function LoginPage() {
                 <input
                   type="email"
                   id="email"
-                  className="appearance-none border-[0.5px] border-[#787A7D] rounded-[10px] w-[378px] mx-auto py-2 px-3 bg-[#CECDCB] text-[#787A7D] leading-tight focus:outline-none focus:shadow-outline"
+                  className="appearance-none border-[0.5px] border-theme rounded-[10px] w-[378px] mx-auto py-2 px-3 bg-surface-strong text-primary leading-tight focus:outline-none focus:shadow-outline theme-transition"
                 />
               </div>
 
               <div className="mb-10 w-[378px] mx-auto ">
                 <label
                   htmlFor="password"
-                  className="block text-[#1E2126] text-3xl font-medium mb-3"
+                  className="block text-primary text-3xl font-medium mb-3"
                 >
                   Password
                 </label>
@@ -62,7 +62,7 @@ export default function LoginPage() {
                 <input
                   type="password"
                   id="password"
-                  className="appearance-none border-[0.5px] border-[#787A7D] rounded-[10px] w-[378px] mx-auto py-2 px-3 bg-[#CECDCB] text-[#787A7D] leading-tight focus:outline-none focus:shadow-outline"
+                  className="appearance-none border-[0.5px] border-theme rounded-[10px] w-[378px] mx-auto py-2 px-3 bg-surface-strong text-primary leading-tight focus:outline-none focus:shadow-outline theme-transition"
                 />
               </div>
 

@@ -24,19 +24,19 @@ export default function TelemetryContext({
   const { latitude, longitude, height } = telemetry.data;
   return (
     <>
-      <div className="w-full bg-white/20  rounded-xl shadow-sm border border-white/20 p-4 flex gap-2">
+      <div className="w-full bg-white/20  rounded-xl shadow-sm border border-white/20 p-4 flex gap-2 theme-transition">
         <div className="min-w-[300px] rounded-lg p-2 min-h-[40px] ">
           <span className="flex items-center justify-between">
-            <p className="text-[14px] font-bold text-[#676262] uppercase">Latitude</p>
-            <p className="text-lg font-mono font-bold text-[#7E2A2A]">{latitude}</p>
+            <p className="text-[14px] font-bold text-muted uppercase">Latitude</p>
+            <p className="text-lg font-mono font-bold text-accent">{latitude}</p>
           </span>
           <span className="flex items-center justify-between">
-            <p className="text-[14px] font-bold text-[#676262] uppercase">Longitude</p>
-            <p className="text-lg font-mono font-bold text-[#7E2A2A]">{longitude}</p>
+            <p className="text-[14px] font-bold text-muted uppercase">Longitude</p>
+            <p className="text-lg font-mono font-bold text-accent">{longitude}</p>
           </span>
           <span className="flex items-center justify-between">
-            <p className="text-[14px] font-bold text-[#676262] uppercase">Height</p>
-            <p className="text-lg font-mono font-bold text-[#7E2A2A]">{height}</p>
+            <p className="text-[14px] font-bold text-muted uppercase">Height</p>
+            <p className="text-lg font-mono font-bold text-accent">{height}</p>
           </span>
         </div>
       </div>
