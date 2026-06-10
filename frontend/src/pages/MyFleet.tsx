@@ -208,20 +208,51 @@ export default function MyFleet() {
             </div>
 
             {showAddForm && (
-              <AddDroneForm
-                onSubmit={handleCreateDrone}
-                onCancel={() => setShowAddForm(false)}
-                submitting={submitting}
-              />
+              <div
+                style={{
+                  position: "fixed",
+                  inset: 0,
+                  backgroundColor: "rgba(0,0,0,0.75)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 1000,
+                }}
+                onClick={() => setShowAddForm(false)}
+              >
+                <div onClick={(e) => e.stopPropagation()} >
+                  <AddDroneForm
+                    onSubmit={handleCreateDrone}
+                    onCancel={() => setShowAddForm(false)}
+                    submitting={submitting}
+                  />
+                </div>
+              </div>
             )}
 
             {activeEditDrone && (
-              <EditDroneForm
-                drone={activeEditDrone}
-                onSubmit={handleUpdateDrone}
-                onCancel={() => setActiveEditDrone(null)}
-                submitting={submitting}
-              />
+              <div
+                style={{
+                  position: "fixed",
+                  inset: 0,
+                  backgroundColor: "rgba(0,0,0,0.75)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  zIndex: 1000,
+                }}
+                onClick={() => setActiveEditDrone(null)}
+              >
+
+                <div onClick={(e) => e.stopPropagation()}>
+                  <EditDroneForm
+                    drone={activeEditDrone}
+                    onSubmit={handleUpdateDrone}
+                    onCancel={() => setActiveEditDrone(null)}
+                    submitting={submitting}
+                  />
+                </div>
+              </div>
             )}
 
             <div className="w-full max-w-7xl max-h-[70vh] overflow-y-auto pl-8 pr-6 mt-2 custom-scroll">

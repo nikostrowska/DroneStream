@@ -38,7 +38,7 @@ export default function EditDroneForm({
 
   return (
     <form
-      className="w-full max-w-3xl bg-white/80 border border-[#D7D7D7] rounded-3xl p-6 shadow-xl mb-8"
+      className="w-full max-w-3xl bg-white border border-[#D7D7D7] rounded-3xl p-6 shadow-xl mb-8"
       onSubmit={handleSubmit}
     >
       <div className="flex items-center justify-between mb-5">
