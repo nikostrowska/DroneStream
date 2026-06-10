@@ -19,7 +19,7 @@ all simultaneously across multiple devices.
 
 ## 🖼️ UI Preview
 
-![UI Mockup](img/makieta_ui.png)
+![UI Mockup](img/ui_preview.png)
 
 ## 🛠️ Tech Stack
 
