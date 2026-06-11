@@ -3,8 +3,10 @@ import { Link } from "react-router-dom";
 import bg from "../assets/background.png";
 import checkIcon from "../assets/checkIcon.svg";
 
-export default function LoginPage() {
-  const [checked, setChecked] = useState(false);
+export default function SignUpPage() {
+
+  const [termsChecked, setTermsChecked] = useState(false);
+
   return (
     <>
       <div>
@@ -12,7 +14,7 @@ export default function LoginPage() {
           className="fixed inset-0 flex items-center justify-center bg-cover bg-center"
           style={{ backgroundImage: `url(${bg})` }}
         >
-          
+
           <div className="absolute top-12 left-12 text-6xl font-jersey font-bold">
             <div className="absolute inset-0 blur-[6px] opacity-60">
               <span className="text-[#1E2126]">DRONE</span>
@@ -27,22 +29,22 @@ export default function LoginPage() {
 
           <div>  
             <h1 className="text-[#7E2A2A] text-8xl font-jaro -mb-[0.750rem] relative z-10 text-center underline decoration-4 underline-offset-[10px] text-shadow">
-              <span className="tracking-[0.5em]">SIGN I</span>
-              <span>N</span>
+              <span className="tracking-[0.5em]">SIGN U</span>
+              <span>P</span>
             </h1>
 
             <form
               action=""
               className="bg-white/35 backdrop-blur-lg border border-white/30 shadow-xl rounded-2xl px-10 py-20 w-[678px]"
             >
-              <div className="mb-10 w-[378px] mx-auto ">
+
+              <div className="mb-6 w-[378px] mx-auto">
                 <label
                   htmlFor="email"
                   className="block text-[#1E2126] text-3xl font-medium mb-3"
                 >
                   E-mail
                 </label>
-
                 <input
                   type="email"
                   id="email"
@@ -50,14 +52,13 @@ export default function LoginPage() {
                 />
               </div>
 
-              <div className="mb-10 w-[378px] mx-auto ">
+              <div className="mb-6 w-[378px] mx-auto">
                 <label
                   htmlFor="password"
                   className="block text-[#1E2126] text-3xl font-medium mb-3"
                 >
                   Password
                 </label>
-
                 <input
                   type="password"
                   id="password"
@@ -65,25 +66,34 @@ export default function LoginPage() {
                 />
               </div>
 
+              <div className="mb-6 w-[378px] mx-auto">
+                <label
+                  htmlFor="confirmPassword"
+                  className="block text-[#1E2126] text-3xl font-medium mb-3"
+                >
+                  Confirm Password
+                </label>
+                <input
+                  type="password"
+                  id="confirmPassword"
+                  className="appearance-none border-[0.5px] border-[#787A7D] rounded-[10px] w-[378px] mx-auto py-2 px-3 bg-[#CECDCB] text-[#787A7D] leading-tight focus:outline-none focus:shadow-outline"
+                />
+              </div>
 
-              <div className="mb-10 flex items-center gap-2 w-[378px] mx-auto">
-
+              <div className="mb-8 flex items-center gap-2 w-[378px] mx-auto">
                 <label className="flex items-center gap-2 cursor-pointer">
-              
                   <input
                     type="checkbox"
-                    checked={checked}
-                    onChange={() => setChecked(!checked)}
+                    checked={termsChecked}
+                    onChange={() => setTermsChecked(!termsChecked)}
                     className="hidden"
                   />
-
                   <div
                     className={`w-6 h-6 border-2 rounded-md flex items-center justify-center border-[#7E2A2A] ${
-                      checked ? "bg-[#7E2A2A]" : "bg-transparent"
+                      termsChecked ? "bg-[#7E2A2A]" : "bg-transparent"
                     }`}
                   >
-
-                    {checked && (
+                    {termsChecked && (
                       <img
                         src={checkIcon}
                         alt="checked"
@@ -91,36 +101,26 @@ export default function LoginPage() {
                       />
                     )}
                   </div>
-
-                  <span className="text-[#1E2126] text-md">Remember me</span>
+                  <span className="text-[#1E2126] text-md">I accept the Terms and Conditions</span>
                 </label>
-
               </div>
-
 
               <div className="flex items-center justify-center w-[378px] mx-auto">
                 <button
                   type="submit"
-                  className="bg-[#7E2A2A] hover:bg-[#701C1C] text-white font-bold py-3 px-20 rounded-full focus:outline-none focus:shadow-outline"
+                  className="bg-[#7E2A2A] hover:bg-[#701C1C] text-white font-bold py-3 px-20 rounded-full focus:outline-none focus:shadow-outline uppercase tracking-wider cursor-pointer"
                 >
-                  SIGN IN
+                  SIGN UP
                 </button>
               </div>
 
-              <div className="mt-10 flex flex-col items-center gap-2">
-  
-                <p className="text-[#1E2126] text-xl">Don’t have an account?{" "}
-                  <Link to="/signup" className="text-[#7E2A2A] font-medium hover:underline">
-                    Sign up
+              <div className="mt-8 flex flex-col items-center gap-2">
+                <p className="text-[#1E2126] text-xl">
+                  Already have an account?{" "}
+                  <Link to="/login" className="text-[#7E2A2A] font-medium hover:underline">
+                    Sign in
                   </Link>
                 </p>
-                <a
-                  href="#"
-                  className="mt-5 text-[#1E2126] text-xl hover:underline"
-                >
-                  Forgot your password?
-                </a>
-
               </div>
               
             </form>

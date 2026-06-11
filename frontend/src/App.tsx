@@ -8,6 +8,7 @@ import Navbar from "./components/navbar/Navbar";
 import Home from "./pages/HomePage";
 import MyFleet from "./pages/MyFleet";
 import LoginPage from "./pages/LoginPage";
+import SignUpPage from "./pages/SignUpPage";
 
 function App() {
   return (
@@ -19,19 +20,21 @@ function App() {
 
 function AppContent() {
   const location = useLocation();
-  const isLogin = location.pathname === "/login";
+  const isAuth = location.pathname === "/login" || location.pathname === "/signup";
+
 
   return (
     <div
       className="flex h-screen w-screen overflow-hidden flex-col"
-      style={{ backgroundColor: isLogin ? "transparent" : "#BEBABA" }}
+      style={{ backgroundColor: isAuth ? "transparent" : "#BEBABA" }}
     >
-      {!isLogin && <Navbar />}
+      {!isAuth && <Navbar />}
 
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/myfleet" element={<MyFleet />} />
         <Route path="/login" element={<LoginPage />} />
+        <Route path="/signup" element={<SignUpPage />} />
       </Routes>
     </div>
   );
