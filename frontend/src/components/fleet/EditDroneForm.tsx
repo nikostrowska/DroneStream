@@ -1,0 +1,119 @@
+import { type FormEvent, useEffect, useState } from "react";
+import type { DroneDTO, UpdateDroneDTO } from "../../types/drone";
+
+type Props = {
+  drone: DroneDTO;
+  onSubmit: (id: string, data: UpdateDroneDTO) => void;
+  onCancel: () => void;
+  submitting?: boolean;
+};
+
+export default function EditDroneForm({
+  drone,
+  onSubmit,
+  onCancel,
+  submitting,
+}: Props) {
+  const [name, setName] = useState(drone.name);
+  const [model, setModel] = useState(drone.model ?? "");
+  const [serialNumber, setSerialNumber] = useState(drone.serialNumber);
+  const [pilotSerialNumber, setPilotSerialNumber] = useState("");
+
+  useEffect(() => {
+    setName(drone.name);
+    setModel(drone.model ?? "");
+    setSerialNumber(drone.serialNumber);
+    setPilotSerialNumber(drone.pilotSerialNumber);
+  }, [drone]);
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    onSubmit(drone.id, {
+      name: name.trim() || undefined,
+      model: model.trim() || undefined,
+      serialNumber: serialNumber.trim() || undefined,
+      pilotSerialNumber: pilotSerialNumber.trim() || undefined,
+    });
+  };
+
+  return (
+    <form
+      className="w-full max-w-3xl bg-surface-strong border border-[#D7D7D7] rounded-3xl p-6 shadow-xl mb-8"
+      onSubmit={handleSubmit}
+    >
+      <div className="flex items-center justify-between mb-5">
+        <div>
+          <h2 className="text-2xl font-semibold text-primary">Edit drone</h2>
+          <p className="text-sm text-secondary mt-1">
+            Update the drone details based on the backend DTO.
+          </p>
+        </div>
+        <span className="text-sm text-accent">
+          Status: {drone.isOnline ? "online" : "offline"}
+        </span>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <label className="flex flex-col gap-2 text-sm text-primary">
+          Name*
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="rounded-xl border border-theme px-4 py-3 bg-surface-strong focus:outline-none text-primary"
+          />
+        </label>
+
+        <label className="flex flex-col gap-2 text-sm text-primary">
+          Model
+          <input
+            value={model}
+            onChange={(e) => setModel(e.target.value)}
+            className="rounded-xl border border-theme px-4 py-3 bg-surface-strong focus:outline-none text-primary"
+          />
+        </label>
+
+        <label className="flex flex-col gap-2 text-sm text-primary">
+          Serial Number*
+          <input
+            value={serialNumber}
+            onChange={(e) => setSerialNumber(e.target.value)}
+            className="rounded-xl border border-theme px-4 py-3 bg-surface-strong focus:outline-none text-primary"
+          />
+        </label>
+        <label className="flex flex-col gap-2 text-sm text-primary">
+          Pilot Serial Number
+          <input
+            value={pilotSerialNumber}
+            onChange={(e) => setPilotSerialNumber(e.target.value)}
+            className="rounded-xl border border-theme px-4 py-3 bg-surface-strong focus:outline-none text-primary"
+            placeholder="Serial number"
+          />
+        </label>
+      </div>
+
+      <div className="mt-4 text-sm text-[#5F5F5F]">
+        Last activity:{" "}
+        {drone.lastActivity
+          ? new Date(drone.lastActivity).toLocaleString()
+          : "Not available"}
+      </div>
+
+      <div className="mt-6 flex flex-wrap gap-3 justify-end">
+        <button
+          type="button"
+          onClick={onCancel}
+          className="rounded-full border border-[#7E2A2A] px-6 py-3 text-sm font-semibold text-[#7E2A2A] hover:bg-[#7E2A2A]/10"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          disabled={submitting || !name.trim() || !serialNumber.trim()}
+          className="rounded-full bg-[#7E2A2A] px-6 py-3 text-sm font-semibold text-white hover:bg-[#701C1C] disabled:opacity-50"
+        >
+          {submitting ? "Saving..." : "Save changes"}
+        </button>
+      </div>
+    </form>
+  );
+}

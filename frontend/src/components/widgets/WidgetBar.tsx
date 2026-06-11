@@ -1,0 +1,71 @@
+import { useMemo } from "react";
+
+import MapContext from "../map/MapContext";
+import TelemetryContext, { type DroneTelemetry } from "./TelemetryContext";
+import Widget from "./Widget";
+
+export default function WidgetBar({ droneTelemetry, pilotTelemetry }: { droneTelemetry: DroneTelemetry | undefined, pilotTelemetry: DroneTelemetry | undefined }) {
+  function convertDDtoDMS(
+    lon: number | null,
+    lat: number | null,
+  ): string | undefined {
+    if (!lon || !lat) return;
+    const dlon: number = Math.floor(lon);
+    const mlon: number = (Number(lon) - dlon) * 60;
+    const slon: number = Math.round((mlon - Math.floor(mlon)) * 60);
+
+    const dlat: number = Math.floor(lat);
+    const mlat: number = (Number(lat) - dlat) * 60;
+    const slat: number = Math.round((mlat - Math.floor(mlat)) * 60);
+
+    return `${dlon}°${Math.floor(mlon)}'${slon}"${dlon >= 0 ? "N" : "S"} ${dlat}°${Math.floor(mlat)}'${slat}"${dlon >= 0 ? "E" : "W"}`;
+  }
+
+  const telemetryWithFallback: DroneTelemetry = droneTelemetry ?? {
+    serialNumber: "abcdefgh",
+    gateway: "---",
+    data: {
+      latitude: null,
+      longitude: null,
+      height: null,
+      timestamp: null,
+      absoluteAltitude: null,
+      gimbalYaw: null,
+      gimbalPitch: null,
+      gimbalRoll: null,
+      battery: null,
+      connection: null,
+    },
+  };
+
+  const location = useMemo(
+    () =>
+      droneTelemetry
+        ? convertDDtoDMS(droneTelemetry.data.longitude, droneTelemetry.data.latitude)
+        : undefined,
+    [droneTelemetry],
+  );
+
+  return (
+    <aside className="relative w-[390px] h-full bg-surface flex flex-col p-6 gap-4 overflow-y-auto border-r border-theme theme-transition">
+      <Widget
+        title="Pilot Name"
+        value={telemetryWithFallback.gateway ?? undefined}
+      />
+      <TelemetryContext telemetry={telemetryWithFallback} />
+      <MapContext droneTelemetry={droneTelemetry} pilotTelemetry={pilotTelemetry} />
+      <Widget
+        title="Coordinates"
+        value={location ?? "---"}
+      />
+      <Widget
+        title="Connection"
+        value={telemetryWithFallback.data.connection ?? "---"}
+      />
+      <Widget
+        title="Batery"
+        value={telemetryWithFallback.data.battery ?? "---%"}
+      />
+    </aside>
+  );
+}
