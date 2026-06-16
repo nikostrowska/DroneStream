@@ -26,6 +26,20 @@ export default function Navbar() {
         </div>
       </Link>
 
+      <Link to="/myfleet"
+        className="relative text-3xl text-white ml-5 no-underline font-jersey font-bold"
+      >
+        <div className="absolute inset-0 blur-[6px] opacity-60">
+          <span className="text-[#FFFFFF]">My</span>
+          <span className="text-[#7E2A2A]">Fleet</span>
+        </div>
+        <div className="relative">
+          <span className="text-[#FFFFFF]">My</span>
+          <span className="text-[#7E2A2A]">Fleet</span>
+        </div>
+      </Link>
+
+
       <nav className="ml-auto mr-5 flex items-center gap-4">
         <button
           onClick={() => {
@@ -42,17 +56,15 @@ export default function Navbar() {
           setIsProfileOpen(false);
           setIsSettingsOpen(false);
         }}
-        className={`fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300 z-40 ${
-          isProfileOpen || isSettingsOpen
-            ? "opacity-100 pointer-events-auto"
-            : "opacity-0 pointer-events-none"
-        }`}
+        className={`fixed inset-0 bg-black/80 backdrop-blur-sm transition-opacity duration-300 z-40 ${isProfileOpen || isSettingsOpen
+          ? "opacity-100 pointer-events-auto"
+          : "opacity-0 pointer-events-none"
+          }`}
       />
 
       <div
-        className={`fixed top-0 right-0 h-screen w-1/5 bg-surface border-l border-theme p-5 transition-transform duration-300 z-50 ${
-          isSettingsOpen ? "translate-x-0" : "translate-x-full"
-        }`}
+        className={`fixed top-0 right-0 h-screen w-1/5 bg-surface border-l border-theme p-5 transition-transform duration-300 z-50 ${isSettingsOpen ? "translate-x-0" : "translate-x-full"
+          }`}
       >
         <div className="flex flex-col w-full h-full justify-between">
           <div>

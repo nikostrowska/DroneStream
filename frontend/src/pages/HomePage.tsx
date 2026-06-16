@@ -206,12 +206,6 @@ export default function HomePage() {
       <main className="flex-1 bg-surface flex flex-col p-8 overflow-hidden theme-transition">
         <div className="flex justify-end items-center mr-3 mt-8 gap-4">
           <RefreshButton onRefresh={loadDrones} />
-          <Link
-            to="/myfleet"
-            className="text-white hover:text-gray-300 font-semibold no-underline"
-          >
-            My Fleet
-          </Link>
 
           <select
             className="w-[500px] bg-surface-strong rounded-xl px-4 py-3 border border-theme shadow-lg focus:outline-none text-primary"
