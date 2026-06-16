@@ -3,6 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import type { DroneDTO } from "../types/drone";
 import type { DroneTelemetry } from "../components/widgets/TelemetryContext";
 import WidgetBar from "../components/widgets/WidgetBar";
+import RefreshButton from "../components/stream/RefreshButton";
 import Stream from "../components/stream/Stream";
 import { useSignalR } from "../components/signalRContext/SignalRProvider";
 
@@ -45,32 +46,27 @@ export default function HomePage() {
    * Load drones independently from SignalR connection.
    * Online/offline state is derived from telemetry heartbeats only.
    */
-  useEffect(() => {
-    const loadDrones = async () => {
-      setLoading(true);
-
-      try {
-        const response = await fetch(`${apiBaseUrl}/drone`);
-        if (!response.ok) {
-          throw new Error("Failed to load drones");
-        }
-        const data = (await response.json()) as DroneDTO[];
-        setDrones(data);
-
-        const initialStatuses: Record<string, boolean> = {};
-        data.forEach((drone) => {
-          initialStatuses[drone.serialNumber.trim()] = false;
-        });
-        setOnlineMap(initialStatuses);
-      } catch (error) {
-        console.error("Error loading drones:", error);
-      } finally {
-        setLoading(false);
+  const loadDrones = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${apiBaseUrl}/drone`);
+      if (!response.ok) {
+        throw new Error("Failed to load drones");
       }
-    };
+      const data = (await response.json()) as DroneDTO[];
+      setDrones(data);
 
-    loadDrones();
-  }, []);
+      const initialStatuses: Record<string, boolean> = {};
+      data.forEach((drone) => {
+        initialStatuses[drone.serialNumber.trim()] = false;
+      });
+      setOnlineMap(initialStatuses);
+    } catch (error) {
+      console.error("Error loading drones:", error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   /**
    * Reset or start inactivity timeout for a drone serial number.
@@ -121,10 +117,14 @@ export default function HomePage() {
 
   };
 
+  useEffect(() => {
+    loadDrones();
+    return () => {
+      Object.values(timeouts.current).forEach((timer) => clearTimeout(timer));
+      timeouts.current = {};
+    };
+  }, []);
 
-  /**
-   * Create and manage a single persistent SignalR connection.
-   */
   useEffect(() => {
     if (!connection || !isConnected) return;
 
@@ -132,8 +132,7 @@ export default function HomePage() {
       if (!payload) return;
       const serialNumber = String(payload.gateway).trim();
       setPilotTelemetryMap((prev) => ({
-        ...prev,
-        [serialNumber]: payload,
+        ...prev, [serialNumber]: payload,
       }));
     };
 
@@ -148,7 +147,7 @@ export default function HomePage() {
         return;
       }
 
-      const serialNumber = String(rawSerial).trim();
+      const serialNumber = rawSerial.trim();
 
       // Payload is already the full DroneTelemetry object
       setDroneTelemetryMap((prev) => ({
@@ -165,10 +164,8 @@ export default function HomePage() {
     return () => {
       connection.off("ReceiveTelemetry", droneTelemetryHandler);
       connection.off("PilotTelemetry", pilotTelemetryHandler);
-      Object.values(timeouts.current).forEach((timer) => clearTimeout(timer));
-      timeouts.current = {};
     };
-  }, [connection]);
+  }, [connection, isConnected]);
 
   /**
    * Subscribe to all loaded drone topics whenever the list changes
@@ -189,7 +186,7 @@ export default function HomePage() {
     subscribeTopics().catch((error) => {
       console.error("Failed to subscribe drone topics:", error);
     });
-  }, [drones]);
+  }, [connection, isConnected, drones]);
 
   const selectedDroneData =
     drones.find((drone) => drone.id === currDrone?.id) ?? null;
@@ -208,6 +205,7 @@ export default function HomePage() {
 
       <main className="flex-1 bg-surface flex flex-col p-8 overflow-hidden theme-transition">
         <div className="flex justify-end items-center mr-3 mt-8 gap-4">
+          <RefreshButton onRefresh={loadDrones} />
           <Link
             to="/myfleet"
             className="text-white hover:text-gray-300 font-semibold no-underline"
