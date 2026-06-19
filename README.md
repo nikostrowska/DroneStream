@@ -39,10 +39,20 @@ all simultaneously across multiple devices.
 
 ## 🚀 Getting Started
 
+### First Start
 ```bash
 git clone https://github.com/nikostrowska/DroneStream.git
-docker compose up
+cd DroneStream
+docker compose up --build
 ```
+### Normal Usage
+```bash
+docker compose up
+docker compose down
+```
+### Troubleshooting
+ - delete every container, image and volume tied to the app
+ - rebuild the app
 
 ## 📁 Project Structure
 
