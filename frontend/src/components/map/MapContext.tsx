@@ -79,6 +79,7 @@ export default function MapContext({ droneTelemetry, pilotTelemetry }: { droneTe
     const lon = pilotTelemetry?.data?.longitude;
     const lat = pilotTelemetry?.data?.latitude;
     if (lon != null && lat != null) {
+      if (lon < -180 || lon > 180 || lat > 90 || lat < -90) return;
       const pos = fromLonLat([lon, lat]);
       pilotRef.current.setCoordinates(pos);
       mapRef.current.getView().animate({
@@ -93,6 +94,7 @@ export default function MapContext({ droneTelemetry, pilotTelemetry }: { droneTe
     const lon = droneTelemetry?.data?.longitude;
     const lat = droneTelemetry?.data?.latitude;
     if (lon != null && lat != null) {
+      if (lon < -180 || lon > 180 || lat > 90 || lat < -90) return;
       const pos = fromLonLat([lon, lat]);
       droneRef.current.setCoordinates(pos);
       mapRef.current.getView().animate({
