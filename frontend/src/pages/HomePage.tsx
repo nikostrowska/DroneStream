@@ -6,7 +6,7 @@ import WidgetBar from "../components/widgets/WidgetBar";
 import RefreshButton from "../components/stream/RefreshButton";
 import Stream from "../components/stream/Stream";
 import { useSignalR } from "../components/signalRContext/SignalRProvider";
-import gridIcon from "../assets/grid.svg"
+import Grid from "../components/fleet/Grid";
 
 const apiBaseUrl =
   import.meta.env.VITE_API_BASE_URL ??
@@ -211,11 +211,7 @@ export default function HomePage() {
             to="/myfleet"
             className="text-white hover:text-gray-300 font-semibold no-underline"
           >
-            <img
-              src={gridIcon}
-              alt="grid view"
-              title="MyFleet"
-            />
+            <Grid />
           </Link>
 
           <select
